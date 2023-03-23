@@ -1,5 +1,6 @@
 package codingchica.demo.test.dropwizard;
 
+import codingchica.demo.test.dropwizard.config.DropwizardTestDemoConfiguration;
 import io.dropwizard.Application;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
@@ -17,7 +18,11 @@ public class DropwizardTestDemoApplication extends
      * @throws Exception If the application is unable to start up.
      */
     public static void main(final String[] args) throws Exception {
-        new DropwizardTestDemoApplication().run(args);
+        String[] arguments = args;
+        if (arguments == null) {
+            arguments = new String[0];
+        }
+        new DropwizardTestDemoApplication().run(arguments);
     }
 
     /**

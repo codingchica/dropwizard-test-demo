@@ -1,4 +1,4 @@
-package codingchica.demo.test.dropwizard;
+package codingchica.demo.test.dropwizard.config;
 
 import io.dropwizard.Configuration;
 
