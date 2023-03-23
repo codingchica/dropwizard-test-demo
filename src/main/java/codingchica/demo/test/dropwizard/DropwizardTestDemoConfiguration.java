@@ -2,6 +2,10 @@ package codingchica.demo.test.dropwizard;
 
 import io.dropwizard.Configuration;
 
+/**
+ * The POJO representing the application configuration that will be used when
+ * running the server. See appConfig/config.yml.
+ */
 public class DropwizardTestDemoConfiguration extends Configuration {
-    // TODO: implement service configuration
+    // No customizations at present.
 }
