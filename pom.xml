@@ -16,12 +16,22 @@
     <properties>
         <apache.commmons.lang.version>3.12.0</apache.commmons.lang.version>
         <dropwizard.version>2.1.4</dropwizard.version>
+        <jacoco.maven.plugin.version>0.8.8</jacoco.maven.plugin.version>
         <java.version>17</java.version>
         <junit.jupiter.version>5.9.1</junit.jupiter.version>
         <junit.platform.version>1.9.1</junit.platform.version>
+        <maven.checkstyle.plugin.version>3.2.1</maven.checkstyle.plugin.version>
+        <maven.compiler.plugin.version>3.10.1</maven.compiler.plugin.version>
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
-        <mainClass>codingchica.demo.test.dropwizard.DropwizardTesDemoApplication</mainClass>
+        <maven.enforcer.plugin.version>3.2.1</maven.enforcer.plugin.version>
+        <maven.jar.plugin.version>3.3.0</maven.jar.plugin.version>
+        <maven.javadoc.plugin.version>3.4.1</maven.javadoc.plugin.version>
+        <maven.project.info.reports.plugin.version>3.4.1</maven.project.info.reports.plugin.version>
+        <maven.shade.plugin.version>3.4.0</maven.shade.plugin.version>
+        <maven.source.plugin.version>3.2.1</maven.source.plugin.version>
+        <maven.surefire.plugin.version>2.22.2</maven.surefire.plugin.version>
+        <mainClass>codingchica.demo.test.dropwizard.DropwizardTestDemoApplication</mainClass>
         <mockito.version>4.6.1</mockito.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
@@ -30,6 +40,7 @@
     <dependencyManagement>
         <dependencies>
             <dependency>
+                <!-- https://github.com/dropwizard/dropwizard/blob/release/2.1.x/dropwizard-dependencies/pom.xml -->
                 <groupId>io.dropwizard</groupId>
                 <artifactId>dropwizard-dependencies</artifactId>
                 <version>${dropwizard.version}</version>
@@ -41,58 +52,69 @@
 
     <dependencies>
         <dependency>
+            <!-- https://github.com/dropwizard/dropwizard/tree/release/2.1.x/dropwizard-core -->
             <groupId>io.dropwizard</groupId>
             <artifactId>dropwizard-core</artifactId>
         </dependency>
         <dependency>
+            <!-- https://github.com/FasterXML/jackson-annotations -->
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-annotations</artifactId>
         </dependency>
         <dependency>
+            <!-- https://github.com/jakartaee/validation -->
             <groupId>jakarta.validation</groupId>
             <artifactId>jakarta.validation-api</artifactId>
         </dependency>
         <dependency>
+            <!-- https://github.com/hibernate/hibernate-validator -->
             <groupId>org.hibernate.validator</groupId>
             <artifactId>hibernate-validator</artifactId>
         </dependency>
         <dependency>
+            <!-- https://github.com/junit-team/junit5/tree/main/junit-jupiter-engine -->
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-engine</artifactId>
             <version>${junit.jupiter.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
+            <!-- https://github.com/junit-team/junit5/tree/main/junit-jupiter-api -->
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
             <version>${junit.jupiter.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
+            <!-- https://github.com/junit-team/junit5/tree/main/junit-jupiter-params -->
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-params</artifactId>
             <version>${junit.jupiter.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
+            <!-- https://github.com/junit-team/junit5/tree/main/junit-platform-suite -->
             <groupId>org.junit.platform</groupId>
             <artifactId>junit-platform-suite</artifactId>
             <version>${junit.platform.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
+            <!-- https://github.com/mockito/mockito -->
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
             <version>${mockito.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
+            <!-- https://github.com/mockito/mockito -->
             <groupId>org.mockito</groupId>
             <artifactId>mockito-junit-jupiter</artifactId>
             <version>${mockito.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
+            <!-- https://github.com/apache/commons-lang -->
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
             <version>${apache.commmons.lang.version}</version>
@@ -103,8 +125,9 @@
     <build>
         <plugins>
             <plugin>
+                <!-- https://maven.apache.org/plugins/maven-shade-plugin/ -->
                 <artifactId>maven-shade-plugin</artifactId>
-                <version>3.4.0</version>
+                <version>${maven.shade.plugin.version}</version>
                 <configuration>
                     <createDependencyReducedPom>true</createDependencyReducedPom>
                     <transformers>
@@ -137,8 +160,9 @@
                 </executions>
             </plugin>
             <plugin>
+                <!-- https://maven.apache.org/plugins/maven-jar-plugin/ -->
                 <artifactId>maven-jar-plugin</artifactId>
-                <version>3.3.0</version>
+                <version>${maven.jar.plugin.version}</version>
                 <configuration>
                     <archive>
                         <manifest>
@@ -150,16 +174,19 @@
                 </configuration>
             </plugin>
             <plugin>
+                <!-- https://maven.apache.org/plugins/maven-compiler-plugin/ -->
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.10.1</version>
+                <version>${maven.compiler.plugin.version}</version>
             </plugin>
             <plugin>
+                <!-- https://maven.apache.org/surefire/maven-surefire-plugin/ -->
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>2.22.2</version>
+                <version>${maven.surefire.plugin.version}</version>
             </plugin>
             <plugin>
+                <!-- https://maven.apache.org/plugins/maven-source-plugin/ -->
                 <artifactId>maven-source-plugin</artifactId>
-                <version>3.2.1</version>
+                <version>${maven.source.plugin.version}</version>
                 <executions>
                     <execution>
                         <id>attach-sources</id>
@@ -170,8 +197,9 @@
                 </executions>
             </plugin>
             <plugin>
+                <!-- https://maven.apache.org/plugins/maven-javadoc-plugin/ -->
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <version>3.4.1</version>
+                <version>${maven.javadoc.plugin.version}</version>
                 <executions>
                     <execution>
                         <id>attach-javadocs</id>
@@ -182,9 +210,10 @@
                 </executions>
             </plugin>
             <plugin>
+                <!-- https://maven.apache.org/plugins/maven-checkstyle-plugin/ -->
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-checkstyle-plugin</artifactId>
-                <version>3.2.1</version>
+                <version>${maven.checkstyle.plugin.version}</version>
                 <configuration>
                     <configLocation>sun_checks.xml</configLocation>
                     <consoleOutput>true</consoleOutput>
@@ -202,9 +231,10 @@
                 </executions>
             </plugin>
             <plugin>
+                <!-- https://maven.apache.org/enforcer/maven-enforcer-plugin/ -->
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-enforcer-plugin</artifactId>
-                <version>3.2.1</version>
+                <version>${maven.enforcer.plugin.version}</version>
                 <executions>
                     <execution>
                         <id>enforce</id>
@@ -220,9 +250,10 @@
                 </executions>
             </plugin>
             <plugin>
+                <!-- https://www.eclemma.org/jacoco/trunk/doc/maven.html -->
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
-                <version>0.8.8</version>
+                <version>${jacoco.maven.plugin.version}</version>
                 <executions>
                     <execution>
                         <id>prepare-agent-ut</id>
@@ -278,16 +309,18 @@
     <reporting>
         <plugins>
             <plugin>
+                <!-- https://maven.apache.org/plugins/maven-project-info-reports-plugin/ -->
                 <artifactId>maven-project-info-reports-plugin</artifactId>
-                <version>3.4.1</version>
+                <version>${maven.project.info.reports.plugin.version}</version>
                 <configuration>
                     <dependencyLocationsEnabled>false</dependencyLocationsEnabled>
                     <dependencyDetailsEnabled>false</dependencyDetailsEnabled>
                 </configuration>
             </plugin>
             <plugin>
+                <!-- https://maven.apache.org/plugins/maven-javadoc-plugin/ -->
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <version>3.4.1</version>
+                <version>${maven.javadoc.plugin.version}</version>
             </plugin>
         </plugins>
     </reporting>
