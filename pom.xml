@@ -15,6 +15,7 @@
 
     <properties>
         <apache.commmons.lang.version>3.12.0</apache.commmons.lang.version>
+        <cucumber.version>7.11.1</cucumber.version>
         <dropwizard.version>2.1.4</dropwizard.version>
         <jacoco.maven.plugin.version>0.8.8</jacoco.maven.plugin.version>
         <java.version>17</java.version>
@@ -30,11 +31,12 @@
         <maven.project.info.reports.plugin.version>3.4.1</maven.project.info.reports.plugin.version>
         <maven.shade.plugin.version>3.4.0</maven.shade.plugin.version>
         <maven.source.plugin.version>3.2.1</maven.source.plugin.version>
-        <maven.surefire.plugin.version>2.22.2</maven.surefire.plugin.version>
+        <maven.surefire.plugin.version>3.0.0</maven.surefire.plugin.version>
         <mainClass>codingchica.demo.test.dropwizard.DropwizardTestDemoApplication</mainClass>
         <mockito.version>4.6.1</mockito.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <properties.maven.plugin>1.1.0</properties.maven.plugin>
     </properties>
 
     <dependencyManagement>
@@ -71,6 +73,8 @@
             <groupId>org.hibernate.validator</groupId>
             <artifactId>hibernate-validator</artifactId>
         </dependency>
+
+        <!-- Test dependencies -->
         <dependency>
             <!-- https://github.com/junit-team/junit5/tree/main/junit-jupiter-engine -->
             <groupId>org.junit.jupiter</groupId>
@@ -118,6 +122,30 @@
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
             <version>${apache.commmons.lang.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.cucumber</groupId>
+            <artifactId>cucumber-junit</artifactId>
+            <version>${cucumber.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.cucumber</groupId>
+            <artifactId>cucumber-core</artifactId>
+            <version>${cucumber.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.cucumber</groupId>
+            <artifactId>cucumber-java</artifactId>
+            <version>${cucumber.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.cucumber</groupId>
+            <artifactId>cucumber-junit-platform-engine</artifactId>
+            <version>${cucumber.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -179,9 +207,80 @@
                 <version>${maven.compiler.plugin.version}</version>
             </plugin>
             <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>properties-maven-plugin</artifactId>
+                <version>${properties.maven.plugin}</version>
+                <executions>
+                    <execution>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>read-project-properties</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <files>
+                        <!-- This file is used by the IDE when running the CLI, so Maven should be kept in sync. -->
+                        <file>src/test/resources/cucumber.properties</file>
+                    </files>
+                </configuration>
+            </plugin>
+            <plugin>
                 <!-- https://maven.apache.org/surefire/maven-surefire-plugin/ -->
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>${maven.surefire.plugin.version}</version>
+                <configuration>
+                    <runOrder>random</runOrder>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>unit-tests</id>
+                        <configuration>
+                            <failIfNoTests>true</failIfNoTests>
+                            <includes>
+                                <include>**/*Test.java</include>
+                            </includes>
+                            <excludes>
+                                <exclude>**/*ComponentSuite.java</exclude>
+                            </excludes>
+                            <reportsDirectory>${project.build.directory}/unit-tests</reportsDirectory>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>component-tests</id>
+                        <phase>integration-test</phase>
+                        <goals>
+                            <goal>test</goal>
+                        </goals>
+                        <configuration>
+                            <properties>
+                                <!--
+                                When adding a new property here, suggest keeping src/test/resources/cucumber.properties in sync.
+                                These properties values are loaded from that file during the Maven build.
+                                -->
+                                <configurationParameters>
+                                    cucumber.junit-platform.naming-strategy=${cucumber.junit-platform.naming-strategy}
+                                    cucumber.execution.dry-run=${cucumber.execution.dry-run}
+                                    cucumber.junit-platform.naming-strategy=${cucumber.junit-platform.naming-strategy}
+                                    cucumber.plugin=${cucumber.plugin}
+                                    cucumber.publish.enabled=${cucumber.publish.enabled}
+                                    cucumber.publish.quiet=${cucumber.publish.quiet}
+                                </configurationParameters>
+                            </properties>
+                            <includes>
+                                <include>**/*ComponentSuite.java</include>
+                            </includes>
+                            <redirectTestOutputToFile>false</redirectTestOutputToFile>
+                            <reportsDirectory>${project.build.directory}/component-tests</reportsDirectory>
+                            <excludes>
+                                <exclude>**/*Test.java</exclude>
+                            </excludes>
+                            <includeJUnit5Engines>
+                                <engine>junit-platform-suite</engine>
+                            </includeJUnit5Engines>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
             <plugin>
                 <!-- https://maven.apache.org/plugins/maven-source-plugin/ -->
@@ -265,6 +364,16 @@
                         </configuration>
                     </execution>
                     <execution>
+                        <id>prepare-agent-component</id>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                        <phase>pre-integration-test</phase>
+                        <configuration>
+                            <destFile>${project.build.directory}/jacoco-component/jacoco-component.exec</destFile>
+                        </configuration>
+                    </execution>
+                    <execution>
                         <id>report-ut</id>
                         <phase>test</phase>
                         <goals>
@@ -273,6 +382,17 @@
                         <configuration>
                             <dataFile>${project.build.directory}/jacoco-ut/jacoco-ut.exec</dataFile>
                             <outputDirectory>${project.build.directory}/ut-coverage-reports</outputDirectory>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>report-component</id>
+                        <phase>post-integration-test</phase>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                        <configuration>
+                            <dataFile>${project.build.directory}/jacoco-component/jacoco-component.exec</dataFile>
+                            <outputDirectory>${project.build.directory}/component-coverage-reports</outputDirectory>
                         </configuration>
                     </execution>
                     <execution>
@@ -301,6 +421,7 @@
                             </rules>
                         </configuration>
                     </execution>
+                    <!-- TODO - Once server execution is added, add a check for code coverage of component testing. -->
                 </executions>
             </plugin>
         </plugins>
