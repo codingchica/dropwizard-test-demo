@@ -1,18 +1,24 @@
 package codingchica.demo.test.dropwizard;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.*;
 
 import codingchica.demo.test.dropwizard.config.DropwizardTestDemoConfiguration;
+import io.dropwizard.ConfiguredBundle;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import org.apache.commons.lang3.StringUtils;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -27,6 +33,9 @@ class DropwizardTestDemoApplicationTest {
   @Mock private DropwizardTestDemoConfiguration dropwizardTestDemoConfiguration;
   @Mock private Environment environment;
   @Mock private Bootstrap<DropwizardTestDemoConfiguration> bootstrap;
+
+  @Captor
+  private ArgumentCaptor<ConfiguredBundle<DropwizardTestDemoConfiguration>> bundleArgumentCaptor;
 
   /** Unit tests for the run method. */
   @Nested
@@ -48,7 +57,7 @@ class DropwizardTestDemoApplicationTest {
   @Nested
   class InitializeTest {
     @Test
-    void whenInitializeInvoked_thenNoInteractions() {
+    void whenInitializeInvoked_thenSuccess() {
       // Setup
 
       // Execution

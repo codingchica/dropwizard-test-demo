@@ -4,10 +4,10 @@ import codingchica.demo.test.dropwizard.config.DropwizardTestDemoConfiguration;
 import io.dropwizard.Application;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
+import org.apache.commons.lang3.ArrayUtils;
 
 /** The main DropWizard application / controller. */
 public class DropwizardTestDemoApplication extends Application<DropwizardTestDemoConfiguration> {
-
   /**
    * Entry point from the command line when starting up the DropWizard application.
    *
@@ -15,10 +15,7 @@ public class DropwizardTestDemoApplication extends Application<DropwizardTestDem
    * @throws Exception If the application is unable to start up.
    */
   public static void main(final String[] args) throws Exception {
-    String[] arguments = args;
-    if (arguments == null) {
-      arguments = new String[0];
-    }
+    String[] arguments = ArrayUtils.nullToEmpty(args);
     new DropwizardTestDemoApplication().run(arguments);
   }
 

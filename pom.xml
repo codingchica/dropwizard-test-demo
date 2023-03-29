@@ -12,8 +12,13 @@
 
   <properties>
     <apache.commmons.lang.version>3.12.0</apache.commmons.lang.version>
+    <apache.commons.collections.version>4.4</apache.commons.collections.version>
+    <cucumber.expressions.version>16.1.2</cucumber.expressions.version>
     <cucumber.version>7.11.1</cucumber.version>
+    <dropwizard.client.version>2.1.5</dropwizard.client.version>
     <dropwizard.version>2.1.4</dropwizard.version>
+    <dropwizard.testing.version>2.1.5</dropwizard.testing.version>
+    <google.guava.version>31.1-jre</google.guava.version>
     <jacoco.maven.plugin.version>0.8.8</jacoco.maven.plugin.version>
     <java.version>17</java.version>
     <junit.jupiter.version>5.9.1</junit.jupiter.version>
@@ -58,6 +63,15 @@
       <artifactId>dropwizard-core</artifactId>
     </dependency>
     <dependency>
+      <!--
+      https://github.com/dropwizard/dropwizard/tree/release/2.1.x/dropwizard-client
+      https://www.dropwizard.io/en/latest/manual/testing.html
+      -->
+      <groupId>io.dropwizard</groupId>
+      <artifactId>dropwizard-client</artifactId>
+      <version>${dropwizard.client.version}</version>
+    </dependency>
+    <dependency>
       <!-- https://github.com/FasterXML/jackson-annotations -->
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-annotations</artifactId>
@@ -72,8 +86,39 @@
       <groupId>org.hibernate.validator</groupId>
       <artifactId>hibernate-validator</artifactId>
     </dependency>
+    <dependency>
+      <!-- https://github.com/google/guava -->
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava</artifactId>
+      <version>${google.guava.version}</version>
+    </dependency>
+    <dependency>
+      <!-- https://github.com/apache/commons-collections -->
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-collections4</artifactId>
+      <version>${apache.commons.collections.version}</version>
+    </dependency>
+    <dependency>
+      <!--
+      https://commons.apache.org/proper/commons-lang/
+      https://github.com/apache/commons-lang
+      -->
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-lang3</artifactId>
+      <version>${apache.commmons.lang.version}</version>
+    </dependency>
 
     <!-- Test dependencies -->
+    <dependency>
+      <!--
+      https://github.com/dropwizard/dropwizard/tree/release/2.1.x/dropwizard-testing
+      https://www.dropwizard.io/en/latest/manual/testing.html
+      -->
+      <groupId>io.dropwizard</groupId>
+      <artifactId>dropwizard-testing</artifactId>
+      <version>${dropwizard.testing.version}</version>
+      <scope>test</scope>
+    </dependency>
     <dependency>
       <!-- https://github.com/junit-team/junit5/tree/main/junit-jupiter-engine -->
       <groupId>org.junit.jupiter</groupId>
@@ -117,17 +162,20 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <!-- https://github.com/apache/commons-lang -->
-      <groupId>org.apache.commons</groupId>
-      <artifactId>commons-lang3</artifactId>
-      <version>${apache.commmons.lang.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
       <!-- https://github.com/cucumber/cucumber-jvm/tree/main/cucumber-junit -->
       <groupId>io.cucumber</groupId>
       <artifactId>cucumber-junit</artifactId>
       <version>${cucumber.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <!--
+      https://github.com/cucumber/cucumber-expressions
+      https://cucumber.github.io/try-cucumber-expressions/
+      -->
+      <groupId>io.cucumber</groupId>
+      <artifactId>cucumber-expressions</artifactId>
+      <version>${cucumber.expressions.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -149,6 +197,13 @@
       <groupId>io.cucumber</groupId>
       <artifactId>cucumber-junit-platform-engine</artifactId>
       <version>${cucumber.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.jayway.jsonpath</groupId>
+      <artifactId>json-path</artifactId>
+      <version>2.4.0</version>
+      <!-- TODO change version to variable -->
       <scope>test</scope>
     </dependency>
   </dependencies>
@@ -426,6 +481,7 @@
           </execution>
         </executions>
       </plugin>
+
       <plugin>
         <!-- https://maven.apache.org/plugins/maven-source-plugin/ -->
         <artifactId>maven-source-plugin</artifactId>
@@ -566,7 +622,33 @@
               </rules>
             </configuration>
           </execution>
-          <!-- TODO - Once server execution is added, add a check for code coverage of component testing. -->
+          <!-- TODO enable once CLI tests added -->
+          <!--          <execution>-->
+          <!--            <id>jacoco-check-component</id>-->
+          <!--            <goals>-->
+          <!--              <goal>check</goal>-->
+          <!--            </goals>-->
+          <!--            <configuration>-->
+          <!--              <dataFile>${project.build.directory}/jacoco-component/jacoco-component.exec</dataFile>-->
+          <!--              <rules>-->
+          <!--                <rule>-->
+          <!--                  <element>BUNDLE</element>-->
+          <!--                  <limits>-->
+          <!--                    <limit>-->
+          <!--                      <counter>LINE</counter>-->
+          <!--                      <value>COVEREDRATIO</value>-->
+          <!--                      <minimum>0.90</minimum>-->
+          <!--                    </limit>-->
+          <!--                    <limit>-->
+          <!--                      <counter>BRANCH</counter>-->
+          <!--                      <value>COVEREDRATIO</value>-->
+          <!--                      <minimum>0.90</minimum>-->
+          <!--                    </limit>-->
+          <!--                  </limits>-->
+          <!--                </rule>-->
+          <!--              </rules>-->
+          <!--            </configuration>-->
+          <!--          </execution>-->
         </executions>
       </plugin>
     </plugins>

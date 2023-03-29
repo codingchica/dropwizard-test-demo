@@ -1,4 +1,4 @@
-package codingchica.demo.test.dropwizard.component.healthcheck;
+package codingchica.demo.test.dropwizard.component.admin;
 
 import static io.cucumber.junit.platform.engine.Constants.*;
 
@@ -18,11 +18,11 @@ import org.junit.platform.suite.api.Suite;
 @SelectClasspathResource(
     // Folder from which test scenarios are retrieved from feature file(s) in this folder.
     // This could also point to an individual feature file, if desired.
-    "component/features/healthcheck")
+    "features/adminPort")
 @ConfigurationParameter(
     // Package where the steps are defined for the tests in the feature file(s) selected.
     key = GLUE_PROPERTY_NAME,
-    value = "codingchica.demo.test.dropwizard.component.healthcheck.steps")
+    value = "codingchica.demo.test.dropwizard.component.steps")
 @ConfigurationParameter(
     // Limits the suite's scope to just those tagged with the value provided, in case the same
     // feature file contains multiple types of test scenarios.
@@ -34,7 +34,7 @@ import org.junit.platform.suite.api.Suite;
     // output the banner asking them to publish the reports.
     key = PLUGIN_PUBLISH_QUIET_PROPERTY_NAME,
     value = "true")
-public class HealthCheckComponentSuite {
+public class AdminPortComponentSuite {
   // Actual tests are retrieved by reading the feature file(s) specified above.
   // No actual code is expected in this file.
 }
