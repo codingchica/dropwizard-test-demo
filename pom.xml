@@ -21,6 +21,7 @@
     <google.guava.version>31.1-jre</google.guava.version>
     <jacoco.maven.plugin.version>0.8.8</jacoco.maven.plugin.version>
     <java.version>17</java.version>
+    <json.path.version>2.4.0</json.path.version>
     <junit.jupiter.version>5.9.1</junit.jupiter.version>
     <junit.platform.version>1.9.1</junit.platform.version>
     <maven.checkstyle.plugin.version>3.2.1</maven.checkstyle.plugin.version>
@@ -202,8 +203,7 @@
     <dependency>
       <groupId>com.jayway.jsonpath</groupId>
       <artifactId>json-path</artifactId>
-      <version>2.4.0</version>
-      <!-- TODO change version to variable -->
+      <version>${json.path.version}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
@@ -236,6 +236,7 @@
         </configuration>
         <executions>
           <execution>
+            <id>shade-jar</id>
             <goals>
               <goal>shade</goal>
             </goals>
@@ -381,10 +382,12 @@
         </configuration>
         <executions>
           <execution>
+            <id>auto-style</id>
             <goals>
               <goal>apply</goal>
             </goals>
-            <phase>process-sources</phase>
+            <!-- Using validate phase, so this happens before enforce-style -->
+            <phase>validate</phase>
           </execution>
         </executions>
       </plugin>
@@ -408,6 +411,7 @@
         <version>${maven.compiler.plugin.version}</version>
       </plugin>
       <plugin>
+        <!-- https://www.mojohaus.org/properties-maven-plugin/ -->
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>properties-maven-plugin</artifactId>
         <version>${properties.maven.plugin}</version>
@@ -416,9 +420,12 @@
             <!-- This file is used by the IDE when running the CLI, so Maven should be kept in sync. -->
             <file>src/test/resources/cucumber.properties</file>
           </files>
+          <outputFile/>
+          <properties/>
         </configuration>
         <executions>
           <execution>
+            <id>cucumber-properties</id>
             <goals>
               <goal>read-project-properties</goal>
             </goals>
@@ -522,7 +529,7 @@
         </configuration>
         <executions>
           <execution>
-            <id>validate</id>
+            <id>enforce-style</id>
             <goals>
               <goal>check</goal>
             </goals>
@@ -537,7 +544,7 @@
         <version>${maven.enforcer.plugin.version}</version>
         <executions>
           <execution>
-            <id>enforce</id>
+            <id>enforce-dependency-convergence</id>
             <goals>
               <goal>enforce</goal>
             </goals>
