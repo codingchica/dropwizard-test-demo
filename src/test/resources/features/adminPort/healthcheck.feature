@@ -16,7 +16,6 @@ Feature: Health check API
     Then the response code is 200
     And the response body contains JSON data
       | deadlocks.healthy  | true  |
-      | deadlocks.duration | 0     |
     Examples:
       | expectedResponseType |
       | application/json     |

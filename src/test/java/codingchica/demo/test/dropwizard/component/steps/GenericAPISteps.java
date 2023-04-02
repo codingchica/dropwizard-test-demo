@@ -3,6 +3,7 @@ package codingchica.demo.test.dropwizard.component.steps;
 import static org.junit.jupiter.api.Assertions.*;
 
 import codingchica.demo.test.dropwizard.component.ComponentTestServerFactory;
+import codingchica.demo.test.dropwizard.component.model.APICallWorld;
 import codingchica.demo.test.dropwizard.config.DropwizardTestDemoConfiguration;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;

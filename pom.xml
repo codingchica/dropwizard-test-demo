@@ -42,7 +42,6 @@
     <properties.maven.plugin>1.1.0</properties.maven.plugin>
     <spotless.maven.plugin.version>2.35.0</spotless.maven.plugin.version>
   </properties>
-
   <dependencyManagement>
     <dependencies>
       <dependency>
@@ -65,9 +64,9 @@
     </dependency>
     <dependency>
       <!--
-      https://github.com/dropwizard/dropwizard/tree/release/2.1.x/dropwizard-client
-      https://www.dropwizard.io/en/latest/manual/testing.html
-      -->
+            https://github.com/dropwizard/dropwizard/tree/release/2.1.x/dropwizard-client
+            https://www.dropwizard.io/en/latest/manual/testing.html
+            -->
       <groupId>io.dropwizard</groupId>
       <artifactId>dropwizard-client</artifactId>
       <version>${dropwizard.client.version}</version>
@@ -101,9 +100,9 @@
     </dependency>
     <dependency>
       <!--
-      https://commons.apache.org/proper/commons-lang/
-      https://github.com/apache/commons-lang
-      -->
+            https://commons.apache.org/proper/commons-lang/
+            https://github.com/apache/commons-lang
+            -->
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-lang3</artifactId>
       <version>${apache.commmons.lang.version}</version>
@@ -112,9 +111,9 @@
     <!-- Test dependencies -->
     <dependency>
       <!--
-      https://github.com/dropwizard/dropwizard/tree/release/2.1.x/dropwizard-testing
-      https://www.dropwizard.io/en/latest/manual/testing.html
-      -->
+            https://github.com/dropwizard/dropwizard/tree/release/2.1.x/dropwizard-testing
+            https://www.dropwizard.io/en/latest/manual/testing.html
+            -->
       <groupId>io.dropwizard</groupId>
       <artifactId>dropwizard-testing</artifactId>
       <version>${dropwizard.testing.version}</version>
@@ -171,9 +170,9 @@
     </dependency>
     <dependency>
       <!--
-      https://github.com/cucumber/cucumber-expressions
-      https://cucumber.github.io/try-cucumber-expressions/
-      -->
+            https://github.com/cucumber/cucumber-expressions
+            https://cucumber.github.io/try-cucumber-expressions/
+            -->
       <groupId>io.cucumber</groupId>
       <artifactId>cucumber-expressions</artifactId>
       <version>${cucumber.expressions.version}</version>
@@ -209,6 +208,16 @@
   </dependencies>
 
   <build>
+    <resources>
+      <resource>
+        <filtering>false</filtering>
+        <directory>src/main/resources</directory>
+      </resource>
+      <resource>
+        <filtering>false</filtering>
+        <directory>src/test/resources</directory>
+      </resource>
+    </resources>
     <plugins>
       <plugin>
         <!-- https://maven.apache.org/plugins/maven-shade-plugin/ -->
@@ -463,16 +472,20 @@
             <configuration>
               <properties>
                 <!--
-                                When adding a new property here, suggest keeping src/test/resources/cucumber.properties in sync.
-                                These properties values are loaded from that file during the Maven build.
-                                -->
+                When adding a new property here, suggest keeping src/test/resources/cucumber.properties in sync.
+                These properties values are loaded from that file during the Maven build.
+                -->
                 <configurationParameters>cucumber.junit-platform.naming-strategy=${cucumber.junit-platform.naming-strategy}
-                                    cucumber.execution.dry-run=${cucumber.execution.dry-run}
-                                    cucumber.junit-platform.naming-strategy=${cucumber.junit-platform.naming-strategy}
-                                    cucumber.plugin=${cucumber.plugin}
-                                    cucumber.publish.enabled=${cucumber.publish.enabled}
-                                    cucumber.publish.quiet=${cucumber.publish.quiet}</configurationParameters>
+                  cucumber.execution.dry-run=${cucumber.execution.dry-run}
+                  cucumber.junit-platform.naming-strategy=${cucumber.junit-platform.naming-strategy}
+                  cucumber.plugin=${cucumber.plugin}
+                  cucumber.publish.enabled=${cucumber.publish.enabled}
+                  cucumber.publish.quiet=${cucumber.publish.quiet}</configurationParameters>
               </properties>
+              <systemProperties>
+                <project.artifactId>${project.artifactId}</project.artifactId>
+                <project.version>${project.version}</project.version>
+              </systemProperties>
               <includes>
                 <include>**/*ComponentSuite.java</include>
               </includes>
@@ -557,7 +570,10 @@
         </executions>
       </plugin>
       <plugin>
-        <!-- https://www.eclemma.org/jacoco/trunk/doc/maven.html -->
+        <!--
+        https://www.eclemma.org/jacoco/trunk/doc/maven.html
+        https://www.eclemma.org/jacoco/trunk/doc/integrations.html
+        -->
         <groupId>org.jacoco</groupId>
         <artifactId>jacoco-maven-plugin</artifactId>
         <version>${jacoco.maven.plugin.version}</version>
@@ -612,8 +628,10 @@
               <dataFile>${project.build.directory}/jacoco-ut/jacoco-ut.exec</dataFile>
               <rules>
                 <rule>
+                  <!-- https://www.eclemma.org/jacoco/trunk/doc/api/org/jacoco/core/analysis/IClassCoverage.html -->
                   <element>CLASS</element>
                   <limits>
+                    <!-- https://www.eclemma.org/jacoco/trunk/doc/counters.html -->
                     <limit>
                       <counter>LINE</counter>
                       <value>COVEREDRATIO</value>
@@ -629,33 +647,34 @@
               </rules>
             </configuration>
           </execution>
-          <!-- TODO enable once CLI tests added -->
-          <!--          <execution>-->
-          <!--            <id>jacoco-check-component</id>-->
-          <!--            <goals>-->
-          <!--              <goal>check</goal>-->
-          <!--            </goals>-->
-          <!--            <configuration>-->
-          <!--              <dataFile>${project.build.directory}/jacoco-component/jacoco-component.exec</dataFile>-->
-          <!--              <rules>-->
-          <!--                <rule>-->
-          <!--                  <element>BUNDLE</element>-->
-          <!--                  <limits>-->
-          <!--                    <limit>-->
-          <!--                      <counter>LINE</counter>-->
-          <!--                      <value>COVEREDRATIO</value>-->
-          <!--                      <minimum>0.90</minimum>-->
-          <!--                    </limit>-->
-          <!--                    <limit>-->
-          <!--                      <counter>BRANCH</counter>-->
-          <!--                      <value>COVEREDRATIO</value>-->
-          <!--                      <minimum>0.90</minimum>-->
-          <!--                    </limit>-->
-          <!--                  </limits>-->
-          <!--                </rule>-->
-          <!--              </rules>-->
-          <!--            </configuration>-->
-          <!--          </execution>-->
+          <execution>
+            <id>jacoco-check-component</id>
+            <goals>
+              <goal>check</goal>
+            </goals>
+            <configuration>
+              <dataFile>${project.build.directory}/jacoco-component/jacoco-component.exec</dataFile>
+              <rules>
+                <rule>
+                  <!-- https://www.eclemma.org/jacoco/trunk/doc/api/org/jacoco/core/analysis/IBundleCoverage.html -->
+                  <element>BUNDLE</element>
+                  <limits>
+                    <!-- https://www.eclemma.org/jacoco/trunk/doc/counters.html -->
+                    <limit>
+                      <counter>LINE</counter>
+                      <value>COVEREDRATIO</value>
+                      <minimum>0.90</minimum>
+                    </limit>
+                    <limit>
+                      <counter>BRANCH</counter>
+                      <value>COVEREDRATIO</value>
+                      <minimum>0.90</minimum>
+                    </limit>
+                  </limits>
+                </rule>
+              </rules>
+            </configuration>
+          </execution>
         </executions>
       </plugin>
     </plugins>
@@ -687,9 +706,9 @@
       </activation>
       <properties>
         <!--
-                Workaround for "javadoc: error - The code being documented uses modules but the packages
-                defined in https://docs.oracle.com/javase/8/docs/api/ are in the unnamed module."
-                -->
+                        Workaround for "javadoc: error - The code being documented uses modules but the packages
+                        defined in https://docs.oracle.com/javase/8/docs/api/ are in the unnamed module."
+                        -->
         <maven.javadoc.skip>true</maven.javadoc.skip>
       </properties>
     </profile>

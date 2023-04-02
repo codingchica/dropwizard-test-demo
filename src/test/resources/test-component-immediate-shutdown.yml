@@ -9,3 +9,6 @@ server:
   adminConnectors:
   - type: "http"
     port: 0
+health:
+  delayedShutdownHandlerEnabled: true
+  shutdownWaitPeriod: "2s"
