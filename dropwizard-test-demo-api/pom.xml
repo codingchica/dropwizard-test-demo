@@ -16,18 +16,9 @@
 
   <name>dropwizard-test-demo-api</name>
 
-  <dependencyManagement>
-    <dependencies>
-      <dependency>
-        <!-- https://github.com/dropwizard/dropwizard/blob/release/2.1.x/dropwizard-dependencies/pom.xml -->
-        <groupId>io.dropwizard</groupId>
-        <artifactId>dropwizard-dependencies</artifactId>
-        <version>${dropwizard.version}</version>
-        <type>pom</type>
-        <scope>import</scope>
-      </dependency>
-    </dependencies>
-  </dependencyManagement>
+  <properties>
+    <mainClass>codingchica.demo.test.dropwizard.DropwizardTestDemoApplication</mainClass>
+  </properties>
 
   <dependencies>
     <!-- Runtime dependencies -->
@@ -43,7 +34,6 @@
             -->
       <groupId>io.dropwizard</groupId>
       <artifactId>dropwizard-client</artifactId>
-      <version>${dropwizard.client.version}</version>
     </dependency>
     <dependency>
       <!-- https://github.com/FasterXML/jackson-annotations -->
@@ -64,13 +54,11 @@
       <!-- https://github.com/google/guava -->
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
-      <version>${google.guava.version}</version>
     </dependency>
     <dependency>
       <!-- https://github.com/apache/commons-collections -->
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-collections4</artifactId>
-      <version>${apache.commons.collections.version}</version>
     </dependency>
     <dependency>
       <!--
@@ -79,7 +67,6 @@
             -->
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-lang3</artifactId>
-      <version>${apache.commmons.lang.version}</version>
     </dependency>
 
     <!-- Test dependencies -->
@@ -90,56 +77,48 @@
             -->
       <groupId>io.dropwizard</groupId>
       <artifactId>dropwizard-testing</artifactId>
-      <version>${dropwizard.testing.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <!-- https://github.com/junit-team/junit5/tree/main/junit-jupiter-engine -->
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-engine</artifactId>
-      <version>${junit.jupiter.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <!-- https://github.com/junit-team/junit5/tree/main/junit-jupiter-api -->
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-api</artifactId>
-      <version>${junit.jupiter.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <!-- https://github.com/junit-team/junit5/tree/main/junit-jupiter-params -->
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-params</artifactId>
-      <version>${junit.jupiter.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <!-- https://github.com/junit-team/junit5/tree/main/junit-platform-suite -->
       <groupId>org.junit.platform</groupId>
       <artifactId>junit-platform-suite</artifactId>
-      <version>${junit.platform.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <!-- https://github.com/mockito/mockito -->
       <groupId>org.mockito</groupId>
       <artifactId>mockito-core</artifactId>
-      <version>${mockito.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <!-- https://github.com/mockito/mockito -->
       <groupId>org.mockito</groupId>
       <artifactId>mockito-junit-jupiter</artifactId>
-      <version>${mockito.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <!-- https://github.com/cucumber/cucumber-jvm/tree/main/cucumber-junit -->
       <groupId>io.cucumber</groupId>
       <artifactId>cucumber-junit</artifactId>
-      <version>${cucumber.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -149,34 +128,29 @@
             -->
       <groupId>io.cucumber</groupId>
       <artifactId>cucumber-expressions</artifactId>
-      <version>${cucumber.expressions.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <!-- https://github.com/cucumber/cucumber-jvm/tree/main/cucumber-core -->
       <groupId>io.cucumber</groupId>
       <artifactId>cucumber-core</artifactId>
-      <version>${cucumber.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <!-- https://github.com/cucumber/cucumber-jvm/tree/main/cucumber-java -->
       <groupId>io.cucumber</groupId>
       <artifactId>cucumber-java</artifactId>
-      <version>${cucumber.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <!-- https://github.com/cucumber/cucumber-jvm/tree/main/cucumber-junit-platform-engine -->
       <groupId>io.cucumber</groupId>
       <artifactId>cucumber-junit-platform-engine</artifactId>
-      <version>${cucumber.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>com.jayway.jsonpath</groupId>
       <artifactId>json-path</artifactId>
-      <version>${json.path.version}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
@@ -231,159 +205,14 @@
         <!-- https://github.com/diffplug/spotless/tree/main/plugin-maven -->
         <groupId>com.diffplug.spotless</groupId>
         <artifactId>spotless-maven-plugin</artifactId>
-        <version>${spotless.maven.plugin.version}</version>
-        <configuration>
-          <formats>
-            <!-- you can define as many formats as you want, each is independent -->
-            <format>
-              <!-- define the files to apply to -->
-              <includes>
-                <include>*.md</include>
-                <include>.gitignore</include>
-                <include>.properties</include>
-              </includes>
-              <!-- define the steps to apply to those files -->
-              <trimTrailingWhitespace/>
-              <endWithNewline/>
-              <indent>
-                <tabs>true</tabs>
-                <spacesPerTab>2</spacesPerTab>
-              </indent>
-            </format>
-          </formats>
-          <!-- define a language-specific format -->
-          <java>
-            <googleJavaFormat>
-              <!-- optional -->
-              <version>1.15.0</version>
-              <!-- GOOGLE or AOSP (optional) -->
-              <!-- https://github.com/google/google-java-format -->
-              <style>GOOGLE</style>
-              <!-- optional (requires at least 1.8) -->
-              <reflowLongStrings>true</reflowLongStrings>
-              <!-- optional: custom group artifact (you probably don't need this) -->
-              <groupArtifact>com.google.googlejavaformat:google-java-format</groupArtifact>
-            </googleJavaFormat>
-            <!-- standard import order -->
-            <importOrder/>
-            <!-- self-explanatory -->
-            <removeUnusedImports/>
-            <!-- fixes formatting of type annotations, see below -->
-            <formatAnnotations/>
-
-          </java>
-          <pom>
-            <!-- These are the defaults, you can override if you want -->
-            <includes>
-              <include>pom.xml</include>
-            </includes>
-
-            <sortPom>
-              <!-- The encoding of the pom files -->
-              <encoding>UTF-8</encoding>
-              <!-- line separator to use -->
-              <lineSeparator>${line.separator}</lineSeparator>
-              <!-- Should empty elements be expanded-->
-              <expandEmptyElements>false</expandEmptyElements>
-              <!-- Should a space be added inside self-closing elements-->
-              <spaceBeforeCloseEmptyElement>false</spaceBeforeCloseEmptyElement>
-              <!-- Keep empty lines -->
-              <keepBlankLines>true</keepBlankLines>
-              <!-- Indentation -->
-              <nrOfIndentSpace>2</nrOfIndentSpace>
-              <!-- Should empty lines be indented -->
-              <indentBlankLines>false</indentBlankLines>
-              <!-- Should schema locations be indented -->
-              <indentSchemaLocation>false</indentSchemaLocation>
-              <!-- Sort order of elements: https://github.com/Ekryd/sortpom/wiki/PredefinedSortOrderProfiles-->
-              <predefinedSortOrder>recommended_2008_06</predefinedSortOrder>
-              <!-- Custom sort order of elements: https://raw.githubusercontent.com/Ekryd/sortpom/master/sorter/src/main/resources/custom_1.xml -->
-              <sortOrderFile/>
-              <!-- Sort dependencies: https://github.com/Ekryd/sortpom/wiki/SortDependencies-->
-              <sortDependencies/>
-              <!-- Sort dependency exclusions: https://github.com/Ekryd/sortpom/wiki/SortDependencies-->
-              <sortDependencyExclusions/>
-              <!-- Sort plugins: https://github.com/Ekryd/sortpom/wiki/SortPlugins -->
-              <sortPlugins/>
-              <!-- Sort properties -->
-              <sortProperties>false</sortProperties>
-              <!-- Sort modules -->
-              <sortModules>false</sortModules>
-              <!-- Sort plugin executions -->
-              <sortExecutions>false</sortExecutions>
-            </sortPom>
-          </pom>
-          <json>
-            <includes>
-              <!-- You have to set the target manually -->
-              <include>src/**/*.json</include>
-            </includes>
-            <jackson>
-              <!-- optional: The version of 'com.fasterxml.jackson.core:jackson-databind' to be used -->
-              <version>2.14.1</version>
-              <features>
-                <!-- optional: Customize the set of features (based on com.fasterxml.jackson.databind.SerializationFeature) -->
-                <!-- https://fasterxml.github.io/jackson-databind/javadoc/2.6/com/fasterxml/jackson/databind/SerializationFeature.html -->
-                <!-- optional: true by default -->
-                <INDENT_OUTPUT>true</INDENT_OUTPUT>
-                <!-- optional: false by default -->
-                <ORDER_MAP_ENTRIES_BY_KEYS>true</ORDER_MAP_ENTRIES_BY_KEYS>
-              </features>
-              <jsonFeatures>
-                <!-- false by default -->
-                <QUOTE_FIELD_NAMES>false</QUOTE_FIELD_NAMES>
-              </jsonFeatures>
-              <!-- optional: false by default -->
-              <spaceBeforeSeparator>false</spaceBeforeSeparator>
-            </jackson>
-          </json>
-          <yaml>
-            <includes>
-              <!-- You have to set the target manually -->
-              <include>**/*.yaml</include>
-              <include>**/*.yml</include>
-            </includes>
-            <jackson>
-              <!-- optional: The version of 'com.fasterxml.jackson.dataformat:jackson-dataformat-yaml' to be used -->
-              <version>2.14.1</version>
-              <features>
-                <!-- optional: Customize the set of features (based on com.fasterxml.jackson.databind.SerializationFeature) -->
-                <!-- https://fasterxml.github.io/jackson-databind/javadoc/2.6/com/fasterxml/jackson/databind/SerializationFeature.html -->
-                <!-- true by default -->
-                <INDENT_OUTPUT>true</INDENT_OUTPUT>
-                <!-- false by default -->
-                <ORDER_MAP_ENTRIES_BY_KEYS>true</ORDER_MAP_ENTRIES_BY_KEYS>
-              </features>
-              <yamlFeatures>
-                <!-- false by default -->
-                <WRITE_DOC_START_MARKER>false</WRITE_DOC_START_MARKER>
-                <!-- false by default -->
-                <MINIMIZE_QUOTES>false</MINIMIZE_QUOTES>
-              </yamlFeatures>
-            </jackson>
-          </yaml>
-        </configuration>
-        <executions>
-          <execution>
-            <id>auto-style</id>
-            <goals>
-              <goal>apply</goal>
-            </goals>
-            <!-- Using validate phase, so this happens before enforce-style -->
-            <phase>validate</phase>
-          </execution>
-        </executions>
       </plugin>
       <plugin>
         <!-- https://maven.apache.org/plugins/maven-jar-plugin/ -->
         <artifactId>maven-jar-plugin</artifactId>
-        <version>${maven.jar.plugin.version}</version>
         <configuration>
           <archive>
             <manifest>
-              <addClasspath>true</addClasspath>
               <mainClass>${mainClass}</mainClass>
-              <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
             </manifest>
           </archive>
         </configuration>
@@ -391,41 +220,23 @@
       <plugin>
         <!-- https://maven.apache.org/plugins/maven-compiler-plugin/ -->
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>${maven.compiler.plugin.version}</version>
       </plugin>
       <plugin>
         <!-- https://www.mojohaus.org/properties-maven-plugin/ -->
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>properties-maven-plugin</artifactId>
-        <version>${properties.maven.plugin}</version>
-        <configuration>
-          <files>
-            <!-- This file is used by the IDE when running the CLI, so Maven should be kept in sync. -->
-            <file>src/test/resources/cucumber.properties</file>
-          </files>
-          <outputFile/>
-          <properties/>
-        </configuration>
-        <executions>
-          <execution>
-            <id>cucumber-properties</id>
-            <goals>
-              <goal>read-project-properties</goal>
-            </goals>
-            <phase>initialize</phase>
-          </execution>
-        </executions>
       </plugin>
       <plugin>
         <!-- https://maven.apache.org/surefire/maven-surefire-plugin/ -->
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
+        <version>${maven.surefire.plugin.version}</version>
         <configuration>
           <runOrder>random</runOrder>
         </configuration>
         <executions>
           <execution>
-            <id>unit-tests</id>
+            <id>default-test</id>
             <configuration>
               <failIfNoTests>true</failIfNoTests>
               <includes>
@@ -463,7 +274,7 @@
               <includes>
                 <include>**/*ComponentSuite.java</include>
               </includes>
-              <redirectTestOutputToFile>false</redirectTestOutputToFile>
+              <redirectTestOutputToFile>true</redirectTestOutputToFile>
               <reportsDirectory>${project.build.directory}/component-tests</reportsDirectory>
               <excludes>
                 <exclude>**/*Test.java</exclude>
@@ -476,50 +287,16 @@
       <plugin>
         <!-- https://maven.apache.org/plugins/maven-source-plugin/ -->
         <artifactId>maven-source-plugin</artifactId>
-        <version>${maven.source.plugin.version}</version>
-        <executions>
-          <execution>
-            <id>attach-sources</id>
-            <goals>
-              <goal>jar</goal>
-            </goals>
-          </execution>
-        </executions>
       </plugin>
       <plugin>
         <!-- https://maven.apache.org/plugins/maven-javadoc-plugin/ -->
         <artifactId>maven-javadoc-plugin</artifactId>
         <version>${maven.javadoc.plugin.version}</version>
-        <executions>
-          <execution>
-            <id>attach-javadocs</id>
-            <goals>
-              <goal>jar</goal>
-            </goals>
-          </execution>
-        </executions>
       </plugin>
       <plugin>
         <!-- https://maven.apache.org/plugins/maven-checkstyle-plugin/ -->
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-checkstyle-plugin</artifactId>
-        <version>${maven.checkstyle.plugin.version}</version>
-        <configuration>
-          <!-- google_checks.xml, sun_checks.xml, or a custom local file -->
-          <configLocation>google_checks.xml</configLocation>
-          <consoleOutput>true</consoleOutput>
-          <failsOnError>true</failsOnError>
-          <linkXRef>false</linkXRef>
-        </configuration>
-        <executions>
-          <execution>
-            <id>enforce-style</id>
-            <goals>
-              <goal>check</goal>
-            </goals>
-            <phase>validate</phase>
-          </execution>
-        </executions>
       </plugin>
       <plugin>
         <!-- https://maven.apache.org/enforcer/maven-enforcer-plugin/ -->
@@ -547,7 +324,6 @@
         -->
         <groupId>org.jacoco</groupId>
         <artifactId>jacoco-maven-plugin</artifactId>
-        <version>${jacoco.maven.plugin.version}</version>
         <executions>
           <execution>
             <id>prepare-agent-ut</id>
