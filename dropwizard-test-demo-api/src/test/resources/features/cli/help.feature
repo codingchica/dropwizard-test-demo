@@ -17,7 +17,7 @@ Feature: CLI Help
     When I run the CLI command until it stops
     Then the cli exit code is 0
     And CLI standard error is empty
-    And CLI standard output contains the normalized line 'usage: java -jar dropwizard-test-demo-0.1-SNAPSHOT.jar'
+    And CLI standard output contains the normalized line 'usage: java -jar ${project.artifactId}-${project.version}.jar'
     And CLI standard output contains the normalized line '       [-h] [-v] {server,check} ...'
     And CLI standard output contains the normalized line 'positional arguments:'
     And CLI standard output contains the normalized line '  {server,check}         available commands'
