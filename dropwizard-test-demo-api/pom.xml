@@ -246,6 +246,9 @@
                 <exclude>**/*ComponentSuite.java</exclude>
               </excludes>
               <reportsDirectory>${project.build.directory}/unit-tests</reportsDirectory>
+              <parallel>both</parallel>
+              <threadCount>4</threadCount>
+              <perCoreThreadCount>false</perCoreThreadCount>
             </configuration>
           </execution>
           <execution>
@@ -279,6 +282,9 @@
               <excludes>
                 <exclude>**/*Test.java</exclude>
               </excludes>
+              <parallel>both</parallel>
+              <threadCount>4</threadCount>
+              <perCoreThreadCount>false</perCoreThreadCount>
             </configuration>
           </execution>
         </executions>
