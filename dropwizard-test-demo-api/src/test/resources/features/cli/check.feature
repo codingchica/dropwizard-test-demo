@@ -5,17 +5,21 @@
 # project.version=${project.version}
 
 @version
-Feature: CLI Check
+Feature: CLI Check Configuration File
 
   @Component
-  Scenario: CLI Check successful
+  Scenario Outline: CLI confirms configuration file OK
     Given that my cli call includes the arguments
       | java                                                |
       | -jar                                                |
       | target/${project.artifactId}-${project.version}.jar |
       | check                                               |
-      | appConfig/test-component.yml                        |
+      | <Configuration File>                                |
     When I run the CLI command until it stops
     Then the cli exit code is 0
     And CLI standard error is empty
     And CLI standard output contains the partial line 'io.dropwizard.cli.CheckCommand: Configuration is OK'
+    Examples:
+      | Configuration File                    |
+      | src/test/resources/test-component.yml |
+      | appConfig/prod.yml                    |

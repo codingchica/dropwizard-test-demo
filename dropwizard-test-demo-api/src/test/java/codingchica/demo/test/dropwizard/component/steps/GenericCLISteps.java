@@ -15,19 +15,17 @@ import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeoutException;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
 public class GenericCLISteps {
-  private CLIWorld world = new CLIWorld();
+  private final CLIWorld world = new CLIWorld();
   /**
    * The working directory for the java process should remain the build root, so that the JaCoCo
    * java agent's relative path does not change between Maven's JUnit execution and the new
    * processes being spawned.
    */
-  private File workingDirectory = new File(System.getProperty("user.dir"));
+  private final File workingDirectory = new File(System.getProperty("user.dir"));
 
   private String replaceSystemProperties(String stringValue) {
     String returnValue = stringValue;
@@ -82,7 +80,7 @@ public class GenericCLISteps {
       List<String> jvmInputs = ManagementFactory.getRuntimeMXBean().getInputArguments();
       for (String entry : jvmInputs) {
         if (StringUtils.contains(entry, "javaagent")) {
-          System.out.println(String.format("Passing along Java agent: %s", entry));
+          System.out.printf("Passing along Java agent: %s%n", entry);
           world.arguments.add(entry);
         }
       }
@@ -102,16 +100,16 @@ public class GenericCLISteps {
       BufferedReader bufferedReader,
       Process process,
       boolean stopWhenKeywordInLogs,
-      String ouputLogSnippetForShutdown)
+      String outputLogSnippetForShutdown)
       throws IOException {
     List<String> lines = new ArrayList<>();
-    String nextLine = null;
+    String nextLine;
     do {
       nextLine = bufferedReader.readLine();
       System.out.println(nextLine);
       if (nextLine != null) {
         world.outputLines.add(nextLine);
-        if (stopWhenKeywordInLogs && StringUtils.contains(nextLine, ouputLogSnippetForShutdown)) {
+        if (stopWhenKeywordInLogs && StringUtils.contains(nextLine, outputLogSnippetForShutdown)) {
           System.out.println("Server started successfully - stopping server");
           process.destroyForcibly();
           break;
@@ -122,8 +120,7 @@ public class GenericCLISteps {
   }
 
   @When("I run the CLI command until it stops")
-  public void runCommandUntilItStops()
-      throws IOException, InterruptedException, ExecutionException, TimeoutException {
+  public void runCommandUntilItStops() throws IOException, InterruptedException {
     runCommand(false, null);
   }
 
@@ -144,7 +141,7 @@ public class GenericCLISteps {
     try (InputStreamReader outputReader = new InputStreamReader(process.getInputStream());
         InputStreamReader errorReader = new InputStreamReader(process.getErrorStream());
         BufferedReader outputBuffer = new BufferedReader(outputReader);
-        BufferedReader errorBuffer = new BufferedReader(errorReader); ) {
+        BufferedReader errorBuffer = new BufferedReader(errorReader)) {
 
       int sleepIntervalMilliSec = 10;
       int pollCount = 0;
@@ -175,10 +172,10 @@ public class GenericCLISteps {
   private boolean containsFullLineMatch(String expectedOutput, List<String> actualOutput) {
 
     boolean match = false;
-    if (world.outputLines != null) {
+    if (actualOutput != null) {
 
       match =
-          world.outputLines.stream()
+          actualOutput.stream()
               .anyMatch(
                   (item) ->
                       StringUtils.equals(
@@ -191,10 +188,10 @@ public class GenericCLISteps {
   private boolean containsPartialMatch(String expectedOutput, List<String> actualOutput) {
 
     boolean match = false;
-    if (world.outputLines != null) {
+    if (actualOutput != null) {
 
       match =
-          world.outputLines.stream()
+          actualOutput.stream()
               .anyMatch(
                   (item) ->
                       StringUtils.contains(

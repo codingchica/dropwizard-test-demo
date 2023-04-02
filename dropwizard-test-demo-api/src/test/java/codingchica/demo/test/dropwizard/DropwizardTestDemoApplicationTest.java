@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.*;
 
 import codingchica.demo.test.dropwizard.config.DropwizardTestDemoConfiguration;
-import io.dropwizard.ConfiguredBundle;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import java.io.ByteArrayOutputStream;
@@ -17,8 +16,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -33,9 +30,6 @@ class DropwizardTestDemoApplicationTest {
   @Mock private DropwizardTestDemoConfiguration dropwizardTestDemoConfiguration;
   @Mock private Environment environment;
   @Mock private Bootstrap<DropwizardTestDemoConfiguration> bootstrap;
-
-  @Captor
-  private ArgumentCaptor<ConfiguredBundle<DropwizardTestDemoConfiguration>> bundleArgumentCaptor;
 
   /** Unit tests for the run method. */
   @Nested
@@ -122,12 +116,10 @@ No application version detected. Add a Implementation-Version entry to your JAR'
 
     @Test
     void whenMainInvokedWithNullArguments_thenUsageInfoAndExit() throws Exception {
-      // TODO this should be the same as empty array behavior.
       // Setup
-      String[] args = null;
 
       // Execution
-      DropwizardTestDemoApplication.main(args);
+      DropwizardTestDemoApplication.main(null);
 
       // Validation
       // No exception thrown.  Immediately terminates.

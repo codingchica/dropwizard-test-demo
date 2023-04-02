@@ -13,7 +13,7 @@ import org.junit.jupiter.api.Test;
  *     https://github.com/dropwizard/dropwizard/blob/master/dropwizard-configuration/src/test/java/io/dropwizard/configuration/ConfigurationValidationExceptionTest.java
  */
 class DropwizardTestDemoConfigurationValidationTest {
-  private DropwizardTestDemoConfiguration dropwizardTestDemoConfiguration =
+  private final DropwizardTestDemoConfiguration dropwizardTestDemoConfiguration =
       ConfigFactory.dropwizardTestDemoConfiguration();
 
   private final Validator validator = BaseValidator.newValidator();

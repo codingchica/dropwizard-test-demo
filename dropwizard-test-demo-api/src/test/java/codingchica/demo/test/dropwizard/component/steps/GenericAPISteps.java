@@ -19,7 +19,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
-import java.net.ProtocolException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
@@ -48,14 +47,11 @@ public class GenericAPISteps {
    */
   @ParameterType("admin|application")
   public int portName(String portName) {
-    switch (portName) {
-      case "admin":
-        return DROP_WIZARD_SERVER.getAdminPort();
-      case "application":
-        return DROP_WIZARD_SERVER.getLocalPort();
-      default:
-        throw new IllegalArgumentException("Unexpected portName: " + portName);
-    }
+    return switch (portName) {
+      case "admin" -> DROP_WIZARD_SERVER.getAdminPort();
+      case "application" -> DROP_WIZARD_SERVER.getLocalPort();
+      default -> throw new IllegalArgumentException("Unexpected portName: " + portName);
+    };
   }
 
   @BeforeAll
@@ -89,7 +85,7 @@ public class GenericAPISteps {
   }
 
   @Given("that my request uses the {word} method")
-  public void setHttpMethod(String methodName) throws ProtocolException {
+  public void setHttpMethod(String methodName) {
     world.httpMethod = CurlOption.HttpMethod.valueOf(methodName);
   }
 
@@ -110,12 +106,12 @@ public class GenericAPISteps {
   }
 
   private String getResponseBody() throws IOException {
-    String responseReceived = null;
+    String responseReceived;
     try (BufferedReader br =
         new BufferedReader(
             new InputStreamReader(world.connection.getInputStream(), StandardCharsets.UTF_8))) {
       StringBuilder response = new StringBuilder();
-      String responseLine = null;
+      String responseLine;
       while ((responseLine = br.readLine()) != null) {
         response.append(responseLine.trim());
       }

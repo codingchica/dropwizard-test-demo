@@ -11,7 +11,7 @@ import io.dropwizard.testing.junit5.DropwizardAppExtension;
 public class ComponentTestServerFactory {
 
   private static final DropwizardAppExtension<DropwizardTestDemoConfiguration> DROP_WIZARD_SERVER =
-      new DropwizardAppExtension<DropwizardTestDemoConfiguration>(
+      new DropwizardAppExtension<>(
           DropwizardTestDemoApplication.class,
           ResourceHelpers.resourceFilePath("test-component.yml"));
 
@@ -42,7 +42,7 @@ public class ComponentTestServerFactory {
    * no longer needs access to the running server instance.
    *
    * @see #startServer()
-   * @throws InterruptedException If the thread is interrupted during the sleep prior to shutdown.
+   * @throws InterruptedException If the thread is interrupted during the sleep prior to shut down.
    */
   public static void stopServer() throws InterruptedException {
     synchronized (activeTestCount) {

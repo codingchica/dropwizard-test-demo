@@ -55,13 +55,7 @@ public class AnnotationValidationUtils<T> {
    */
   public void assertEquivalentViolations(
       List<String> expectedViolations, Set<ConstraintViolation<T>> violations) {
-    Comparator<String> stringComparator =
-        new Comparator<String>() {
-          @Override
-          public int compare(String s1, String s2) {
-            return StringUtils.compare(s1, s2);
-          }
-        };
+    Comparator<String> stringComparator = StringUtils::compare;
     List<String> actualMessages = getInterpretedMessages(violations);
     actualMessages.sort(stringComparator);
     expectedViolations.sort(stringComparator);
@@ -76,9 +70,9 @@ public class AnnotationValidationUtils<T> {
   }
 
   /**
-   * Interpret the message of the violation contstraint received during testing in order to provide
-   * a meaningful message to the user showing both which field failed validation, as well as what
-   * failure occurred.
+   * Interpret the message of the violation constraint received during testing in order to provide a
+   * meaningful message to the user showing both which field failed validation, and what failure
+   * occurred.
    *
    * @param violations The violations received during testing.
    * @return An interpreted value containing information about both which field failed validation
@@ -87,9 +81,8 @@ public class AnnotationValidationUtils<T> {
   private List<String> getInterpretedMessages(Set<ConstraintViolation<T>> violations) {
     List<String> interpretedValues = new ArrayList<>();
     if (violations != null) {
-      violations.stream()
-          .forEach(
-              (item) -> interpretedValues.add(item.getPropertyPath() + " " + item.getMessage()));
+      violations.forEach(
+          (item) -> interpretedValues.add(item.getPropertyPath() + " " + item.getMessage()));
     }
     return interpretedValues;
   }

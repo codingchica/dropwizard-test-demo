@@ -293,7 +293,7 @@
               <nrOfIndentSpace>2</nrOfIndentSpace>
               <!-- Should empty lines be indented -->
               <indentBlankLines>false</indentBlankLines>
-              <!-- Should schema locations be indended -->
+              <!-- Should schema locations be indented -->
               <indentSchemaLocation>false</indentSchemaLocation>
               <!-- Sort order of elements: https://github.com/Ekryd/sortpom/wiki/PredefinedSortOrderProfiles-->
               <predefinedSortOrder>recommended_2008_06</predefinedSortOrder>
@@ -456,10 +456,10 @@
                   cucumber.publish.enabled=${cucumber.publish.enabled}
                   cucumber.publish.quiet=${cucumber.publish.quiet}</configurationParameters>
               </properties>
-              <systemProperties>
+              <systemPropertyVariables>
                 <project.artifactId>${project.artifactId}</project.artifactId>
                 <project.version>${project.version}</project.version>
-              </systemProperties>
+              </systemPropertyVariables>
               <includes>
                 <include>**/*ComponentSuite.java</include>
               </includes>
@@ -468,9 +468,6 @@
               <excludes>
                 <exclude>**/*Test.java</exclude>
               </excludes>
-              <includeJUnit5Engines>
-                <engine>junit-platform-suite</engine>
-              </includeJUnit5Engines>
             </configuration>
           </execution>
         </executions>
@@ -653,38 +650,4 @@
       </plugin>
     </plugins>
   </build>
-
-  <reporting>
-    <plugins>
-      <plugin>
-        <!-- https://maven.apache.org/plugins/maven-project-info-reports-plugin/ -->
-        <artifactId>maven-project-info-reports-plugin</artifactId>
-        <version>${maven.project.info.reports.plugin.version}</version>
-        <configuration>
-          <dependencyLocationsEnabled>false</dependencyLocationsEnabled>
-          <dependencyDetailsEnabled>false</dependencyDetailsEnabled>
-        </configuration>
-      </plugin>
-      <plugin>
-        <!-- https://maven.apache.org/plugins/maven-javadoc-plugin/ -->
-        <artifactId>maven-javadoc-plugin</artifactId>
-        <version>${maven.javadoc.plugin.version}</version>
-      </plugin>
-    </plugins>
-  </reporting>
-  <profiles>
-    <profile>
-      <id>java11+</id>
-      <activation>
-        <jdk>[11,)</jdk>
-      </activation>
-      <properties>
-        <!--
-                        Workaround for "javadoc: error - The code being documented uses modules but the packages
-                        defined in https://docs.oracle.com/javase/8/docs/api/ are in the unnamed module."
-                        -->
-        <maven.javadoc.skip>true</maven.javadoc.skip>
-      </properties>
-    </profile>
-  </profiles>
 </project>

@@ -41,6 +41,7 @@
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <properties.maven.plugin>1.1.0</properties.maven.plugin>
     <spotless.maven.plugin.version>2.35.0</spotless.maven.plugin.version>
+    <surefire.includeJUnit5Engines>junit-platform-suite</surefire.includeJUnit5Engines>
   </properties>
   <dependencyManagement>
     <dependencies>
@@ -177,38 +178,4 @@
   <modules>
     <module>dropwizard-test-demo-api</module>
   </modules>
-
-  <reporting>
-    <plugins>
-      <plugin>
-        <!-- https://maven.apache.org/plugins/maven-project-info-reports-plugin/ -->
-        <artifactId>maven-project-info-reports-plugin</artifactId>
-        <version>${maven.project.info.reports.plugin.version}</version>
-        <configuration>
-          <dependencyLocationsEnabled>false</dependencyLocationsEnabled>
-          <dependencyDetailsEnabled>false</dependencyDetailsEnabled>
-        </configuration>
-      </plugin>
-      <plugin>
-        <!-- https://maven.apache.org/plugins/maven-javadoc-plugin/ -->
-        <artifactId>maven-javadoc-plugin</artifactId>
-        <version>${maven.javadoc.plugin.version}</version>
-      </plugin>
-    </plugins>
-  </reporting>
-  <profiles>
-    <profile>
-      <id>java11+</id>
-      <activation>
-        <jdk>[11,)</jdk>
-      </activation>
-      <properties>
-        <!--
-        Workaround for "javadoc: error - The code being documented uses modules but the packages
-        defined in https://docs.oracle.com/javase/8/docs/api/ are in the unnamed module."
-        -->
-        <maven.javadoc.skip>true</maven.javadoc.skip>
-      </properties>
-    </profile>
-  </profiles>
 </project>
