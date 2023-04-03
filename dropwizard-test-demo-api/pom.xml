@@ -249,6 +249,10 @@
               <parallel>both</parallel>
               <threadCount>4</threadCount>
               <perCoreThreadCount>false</perCoreThreadCount>
+              <environmentVariables>
+                <!-- Needed by codingchica.demo.test.dropwizard.config.ConfigurationFileValidationTest -->
+                <LOG_LEVEL_MAIN>DEBUG</LOG_LEVEL_MAIN>
+              </environmentVariables>
             </configuration>
           </execution>
           <execution>

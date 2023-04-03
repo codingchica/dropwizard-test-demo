@@ -1,5 +1,6 @@
 package codingchica.demo.test.dropwizard.config;
 
+import codingchica.demo.test.dropwizard.core.config.DropwizardTestDemoConfiguration;
 import io.dropwizard.validation.BaseValidator;
 import java.util.Set;
 import javax.validation.ConstraintViolation;

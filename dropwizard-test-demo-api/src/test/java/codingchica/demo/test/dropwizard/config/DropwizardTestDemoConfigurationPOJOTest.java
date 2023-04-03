@@ -2,6 +2,7 @@ package codingchica.demo.test.dropwizard.config;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
+import codingchica.demo.test.dropwizard.core.config.DropwizardTestDemoConfiguration;
 import org.junit.jupiter.api.Test;
 
 /**

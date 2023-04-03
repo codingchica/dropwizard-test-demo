@@ -4,7 +4,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import codingchica.demo.test.dropwizard.component.ComponentTestServerFactory;
 import codingchica.demo.test.dropwizard.component.model.APICallWorld;
-import codingchica.demo.test.dropwizard.config.DropwizardTestDemoConfiguration;
+import codingchica.demo.test.dropwizard.core.config.DropwizardTestDemoConfiguration;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
 import io.cucumber.core.options.CurlOption;

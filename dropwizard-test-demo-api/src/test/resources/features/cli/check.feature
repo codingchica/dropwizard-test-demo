@@ -20,6 +20,6 @@ Feature: CLI Check Configuration File
     And CLI standard error is empty
     And CLI standard output contains the partial line 'io.dropwizard.cli.CheckCommand: Configuration is OK'
     Examples:
-      | Configuration File                    |
-      | src/test/resources/test-component.yml |
-      | appConfig/prod.yml                    |
+      | Configuration File                              |
+      | src/test/resources/appConfig/test-component.yml |
+      | src/main/resources/appConfig/prod.yml           |

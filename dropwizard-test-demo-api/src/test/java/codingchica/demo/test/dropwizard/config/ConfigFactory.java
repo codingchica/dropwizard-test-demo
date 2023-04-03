@@ -1,5 +1,7 @@
 package codingchica.demo.test.dropwizard.config;
 
+import codingchica.demo.test.dropwizard.core.config.DropwizardTestDemoConfiguration;
+
 /** A factory for generating happy-path configurations to use in testing. */
 public class ConfigFactory {
 

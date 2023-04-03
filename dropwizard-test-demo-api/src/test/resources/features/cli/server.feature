@@ -14,7 +14,7 @@ Feature: CLI Server
       | -jar                                                     |
       | target/${project.artifactId}-${project.version}.jar      |
       | server                                                   |
-      | src/test/resources/test-component.yml |
+      | src/test/resources/appConfig/test-component.yml |
     When I run the CLI command until output contains: 'org.eclipse.jetty.server.Server: Started'
     Then the cli exit code is 1
     And CLI standard error is empty

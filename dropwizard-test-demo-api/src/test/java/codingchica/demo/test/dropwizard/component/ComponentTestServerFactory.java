@@ -1,7 +1,7 @@
 package codingchica.demo.test.dropwizard.component;
 
 import codingchica.demo.test.dropwizard.DropwizardTestDemoApplication;
-import codingchica.demo.test.dropwizard.config.DropwizardTestDemoConfiguration;
+import codingchica.demo.test.dropwizard.core.config.DropwizardTestDemoConfiguration;
 import io.dropwizard.testing.ResourceHelpers;
 import io.dropwizard.testing.junit5.DropwizardAppExtension;
 
@@ -13,7 +13,7 @@ public class ComponentTestServerFactory {
   private static final DropwizardAppExtension<DropwizardTestDemoConfiguration> DROP_WIZARD_SERVER =
       new DropwizardAppExtension<>(
           DropwizardTestDemoApplication.class,
-          ResourceHelpers.resourceFilePath("test-component.yml"));
+          ResourceHelpers.resourceFilePath("appConfig/test-component.yml"));
 
   /** How many tests are currently using the running server. */
   private static Integer activeTestCount = 0;
