@@ -1,6 +1,6 @@
 package codingchica.demo.test.dropwizard;
 
-import codingchica.demo.test.dropwizard.config.DropwizardTestDemoConfiguration;
+import codingchica.demo.test.dropwizard.core.config.DropwizardTestDemoConfiguration;
 import io.dropwizard.Application;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
@@ -20,7 +20,7 @@ public class DropwizardTestDemoApplication extends Application<DropwizardTestDem
   }
 
   /**
-   * Retrieve the name of the application.
+   * Retrieve the name of the application. Mostly used for the command-line interface.
    *
    * @return The application name.
    */
@@ -30,17 +30,40 @@ public class DropwizardTestDemoApplication extends Application<DropwizardTestDem
   }
 
   /**
-   * Initialize the application with the provided bootstrap configuration.
+   * Initialize the application with the provided bootstrap configuration. This is where you would
+   * add bundles, or commands
    *
+   * @see <a
+   *     href="https://www.dropwizard.io/en/latest/manual/core.html#man-core-bundles">Bundles</a>
+   * @see <a
+   *     href="https://www.dropwizard.io/en/latest/manual/core.html#man-core-commands">Commands</a>
    * @param bootstrap The configuration to use to bootstrap the application during startup.
    */
   @Override
   public void initialize(final Bootstrap<DropwizardTestDemoConfiguration> bootstrap) {
-    // Nothing to do yet.
+    // Enable variable substitution with environment variables
+    //    bootstrap.setConfigurationSourceProvider(
+    //        new SubstitutingSourceProvider(
+    //            bootstrap.getConfigurationSourceProvider(), new
+    // EnvironmentVariableSubstitutor()));
   }
 
   /**
    * Execute the DropWizard application with the specified configuration and environment settings.
+   * This is where you would add filters, health checks, health, Jersey providers, Managed Objects,
+   * servlets, and tasks.
+   *
+   * <ul>
+   *   <li><a href="https://www.dropwizard.io/en/latest/manual/core.html#man-core-health">Health</a>
+   *   <li><a
+   *       href="https://www.dropwizard.io/en/latest/manual/core.html#man-core-healthchecks">Health
+   *       Checks</a>
+   *   <li><a href="https://www.dropwizard.io/en/latest/manual/core.html#man-core-managed">Managed
+   *       Objects</a>
+   *   <li><a
+   *       href="https://www.dropwizard.io/en/latest/manual/core.html#man-core-resources">Resources</a>
+   *   <li><a href="https://www.dropwizard.io/en/latest/manual/core.html#man-core-tasks">Tasks</a>
+   * </ul>
    *
    * @param configuration POJO representing configuration file provided during application launch.
    * @param environment Environment setup to work within.
