@@ -1,4 +1,4 @@
 logging:
-  level: "INFO"
+  level: "${LOG_LEVEL_MAIN}"
   loggers:
     codingchica: "DEBUG"
