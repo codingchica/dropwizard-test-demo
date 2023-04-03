@@ -4,7 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.*;
 
-import codingchica.demo.test.dropwizard.config.DropwizardTestDemoConfiguration;
+import codingchica.demo.test.dropwizard.core.config.DropwizardTestDemoConfiguration;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import java.io.ByteArrayOutputStream;
