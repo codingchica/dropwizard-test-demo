@@ -58,12 +58,12 @@ class DropwizardTestDemoConfigurationPOJOTest {
 
     @Test
     void testNull() throws InvocationTargetException, IllegalAccessException {
-      nullValueRetrievedCorrectly(dropwizardTestDemoConfiguration, (String) null, getter, setter);
+      valueRetrievedCorrectly(dropwizardTestDemoConfiguration, (String) null, getter, setter);
     }
 
     @Test
     void testPopulated() throws InvocationTargetException, IllegalAccessException {
-      populatedValueRetrievedCorrectly(
+      valueRetrievedCorrectly(
           dropwizardTestDemoConfiguration, "some value goes here", getter, setter);
     }
   }
