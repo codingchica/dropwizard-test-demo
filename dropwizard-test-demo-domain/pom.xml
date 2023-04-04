@@ -10,15 +10,11 @@
     <relativePath>../pom.xml</relativePath>
   </parent>
 
-  <artifactId>dropwizard-test-demo-api</artifactId>
+  <artifactId>dropwizard-test-demo-domain</artifactId>
   <version>0.1-SNAPSHOT</version>
   <packaging>jar</packaging>
 
-  <name>dropwizard-test-demo-api</name>
-
-  <properties>
-    <mainClass>codingchica.demo.test.dropwizard.DropwizardTestDemoApplication</mainClass>
-  </properties>
+  <name>dropwizard-test-demo-domain</name>
 
   <dependencies>
     <!-- Runtime dependencies -->
@@ -69,18 +65,12 @@
       <artifactId>commons-lang3</artifactId>
     </dependency>
     <dependency>
-      <groupId>${project.groupId}</groupId>
-      <artifactId>dropwizard-test-demo-domain</artifactId>
-      <version>${project.version}</version>
+      <groupId>org.projectlombok</groupId>
+      <artifactId>lombok</artifactId>
+      <scope>provided</scope>
     </dependency>
 
     <!-- Test dependencies -->
-    <dependency>
-      <groupId>${project.groupId}</groupId>
-      <artifactId>dropwizard-test-demo-domain</artifactId>
-      <classifier>tests</classifier>
-      <scope>test</scope>
-    </dependency>
     <dependency>
       <!--
             https://github.com/dropwizard/dropwizard/tree/release/2.1.x/dropwizard-testing
@@ -186,9 +176,7 @@
           <createDependencyReducedPom>true</createDependencyReducedPom>
           <transformers>
             <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
-            <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-              <mainClass>${mainClass}</mainClass>
-            </transformer>
+            <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer"/>
           </transformers>
           <!-- exclude signed Manifests -->
           <filters>
@@ -220,13 +208,14 @@
       <plugin>
         <!-- https://maven.apache.org/plugins/maven-jar-plugin/ -->
         <artifactId>maven-jar-plugin</artifactId>
-        <configuration>
-          <archive>
-            <manifest>
-              <mainClass>${mainClass}</mainClass>
-            </manifest>
-          </archive>
-        </configuration>
+        <executions>
+          <execution>
+            <id>test-jar</id>
+            <goals>
+              <goal>test-jar</goal>
+            </goals>
+          </execution>
+        </executions>
       </plugin>
       <plugin>
         <!-- https://maven.apache.org/plugins/maven-compiler-plugin/ -->

@@ -25,6 +25,7 @@
         <json.path.version>2.4.0</json.path.version>
         <junit.jupiter.version>5.9.1</junit.jupiter.version>
         <junit.platform.version>1.9.1</junit.platform.version>
+        <lombok.version>1.18.26</lombok.version>
         <maven.checkstyle.plugin.version>3.2.1</maven.checkstyle.plugin.version>
         <maven.compiler.plugin.version>3.10.1</maven.compiler.plugin.version>
         <maven.compiler.source>${java.version}</maven.compiler.source>
@@ -74,8 +75,26 @@
                 <artifactId>commons-lang3</artifactId>
                 <version>${apache.commmons.lang.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.projectlombok</groupId>
+                <artifactId>lombok</artifactId>
+                <version>${lombok.version}</version>
+                <scope>provided</scope>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>dropwizard-test-demo-domain</artifactId>
+                <version>${project.version}</version>
+            </dependency>
 
             <!-- Test dependencies -->
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>dropwizard-test-demo-domain</artifactId>
+                <version>${project.version}</version>
+                <classifier>tests</classifier>
+                <scope>test</scope>
+            </dependency>
             <dependency>
                 <!--
                       https://github.com/dropwizard/dropwizard/tree/release/2.1.x/dropwizard-testing
@@ -345,6 +364,15 @@
                     <artifactId>maven-compiler-plugin</artifactId>
                     <version>${maven.compiler.plugin.version}</version>
                     <inherited>true</inherited>
+                    <configuration>
+                        <annotationProcessorPaths>
+                            <path>
+                                <groupId>org.projectlombok</groupId>
+                                <artifactId>lombok</artifactId>
+                                <version>${lombok.version}</version>
+                            </path>
+                        </annotationProcessorPaths>
+                    </configuration>
                 </plugin>
                 <plugin>
                     <!-- https://www.mojohaus.org/properties-maven-plugin/ -->
@@ -436,6 +464,12 @@
         </pluginManagement>
     </build>
     <modules>
+        <!-- TODO uncomment the sub-modules as they are ready to be consumed by the build. -->
         <module>dropwizard-test-demo-api</module>
+<!--        <module>dropwizard-test-demo-client</module>-->
+        <module>dropwizard-test-demo-domain</module>
+<!--        <module>dropwizard-test-demo-gateways</module>-->
+<!--        <module>dropwizard-test-demo-persistence</module>-->
+<!--        <module>dropwizard-test-demo-service-layer</module>-->
     </modules>
 </project>
