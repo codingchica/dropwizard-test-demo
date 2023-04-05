@@ -1,4 +1,4 @@
-package codingchica.demo.test.dropwizard.config;
+package codingchica.demo.test.dropwizard.util;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -14,17 +14,15 @@ import org.apache.commons.lang3.StringUtils;
 /**
  * A utility class to aid in the validation of javax validation constraint violation related unit
  * tests, such as those performed by Dropwizard on the appConfig file consumed during startup.
- *
- * @param <T> - The type of object being validated.
  */
-public class AnnotationValidationUtils<T> {
+public class AnnotationValidationUtils {
 
   /**
    * Enforce that no violations were found during the validation.
    *
    * @param violations Violations from the test that should be validated.
    */
-  public void assertEmpty(Set<ConstraintViolation<T>> violations) {
+  public static <T> void assertEmpty(Set<ConstraintViolation<T>> violations) {
     assertTrue(
         CollectionUtils.isEmpty(violations),
         "Expected " + getInterpretedMessages(violations) + " to be empty.");
@@ -37,7 +35,8 @@ public class AnnotationValidationUtils<T> {
    *     may differ from what Dropwizard actually returns at runtime.
    * @param violations The violations returned during the test.
    */
-  public void assertOneViolation(String expectedViolation, Set<ConstraintViolation<T>> violations) {
+  public static <T> void assertOneViolation(
+      String expectedViolation, Set<ConstraintViolation<T>> violations) {
     assertFalse(
         CollectionUtils.isEmpty(violations),
         "Expected " + getInterpretedMessages(violations) + " to not be empty.");
@@ -54,7 +53,7 @@ public class AnnotationValidationUtils<T> {
    * @param expectedViolations The violation(s) expected.
    * @param violations The violation(s) received during the test.
    */
-  public void assertEquivalentViolations(
+  public static <T> void assertEquivalentViolations(
       List<String> expectedViolations, Set<ConstraintViolation<T>> violations) {
     Comparator<String> stringComparator = StringUtils::compare;
     List<String> actualMessages = getInterpretedMessages(violations);
@@ -79,7 +78,7 @@ public class AnnotationValidationUtils<T> {
    * @return An interpreted value containing information about both which field failed validation
    *     and the failure that occurred.
    */
-  private List<String> getInterpretedMessages(Set<ConstraintViolation<T>> violations) {
+  private static <T> List<String> getInterpretedMessages(Set<ConstraintViolation<T>> violations) {
     List<String> interpretedValues = new ArrayList<>();
     if (violations != null) {
       // Returns error messages like 'someFeatureFlag must not be null'

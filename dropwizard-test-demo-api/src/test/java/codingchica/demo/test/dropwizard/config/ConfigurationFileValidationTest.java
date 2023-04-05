@@ -1,5 +1,6 @@
 package codingchica.demo.test.dropwizard.config;
 
+import static codingchica.demo.test.dropwizard.util.AnnotationValidationUtils.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 import codingchica.demo.test.dropwizard.core.config.DropwizardTestDemoConfiguration;
@@ -28,9 +29,6 @@ import org.mockito.Spy;
 public class ConfigurationFileValidationTest {
   private static final ObjectMapper objectMapper = Jackson.newObjectMapper();
   private static final Validator validator = Validators.newValidator();
-
-  private static final AnnotationValidationUtils<DropwizardTestDemoConfiguration> validationUtils =
-      new AnnotationValidationUtils<>();
 
   @Spy
   private final EnvironmentVariableSubstitutor environmentVariableSubstitutor =
@@ -93,6 +91,6 @@ public class ConfigurationFileValidationTest {
         validator.validate(configPOJO);
 
     // Validation
-    validationUtils.assertEmpty(violations);
+    assertEmpty(violations);
   }
 }
