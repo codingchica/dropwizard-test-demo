@@ -4,6 +4,7 @@ import codingchica.demo.test.dropwizard.DropwizardTestDemoApplication;
 import codingchica.demo.test.dropwizard.core.config.DropwizardTestDemoConfiguration;
 import io.dropwizard.testing.ResourceHelpers;
 import io.dropwizard.testing.junit5.DropwizardAppExtension;
+import lombok.Synchronized;
 
 /**
  * A class to aid in the starting and stopping of the dropwizard server during component testing.
@@ -22,18 +23,17 @@ public class ComponentTestServerFactory {
    * Start the Dropwizard server, if necessary. Register a new test using the running server. Tests
    * calling this method must later call the related method:
    *
-   * @see #stopServer()
    * @return An object representing the running server.
    * @throws Exception If the server cannot be started.
+   * @see #stopServer()
    */
+  @Synchronized
   public static DropwizardAppExtension<DropwizardTestDemoConfiguration> startServer()
       throws Exception {
-    synchronized (activeTestCount) {
-      if (activeTestCount == 0) {
-        DROP_WIZARD_SERVER.before();
-      }
-      activeTestCount = activeTestCount + 1;
+    if (activeTestCount == 0) {
+      DROP_WIZARD_SERVER.before();
     }
+    activeTestCount = activeTestCount + 1;
     return DROP_WIZARD_SERVER;
   }
 
@@ -42,16 +42,12 @@ public class ComponentTestServerFactory {
    * no longer needs access to the running server instance.
    *
    * @see #startServer()
-   * @throws InterruptedException If the thread is interrupted during the sleep prior to shut down.
    */
-  public static void stopServer() throws InterruptedException {
-    synchronized (activeTestCount) {
-      activeTestCount = activeTestCount - 1;
-      if (activeTestCount == 0) {
-        // For good measure in case anything goes wrong with the count.
-        Thread.sleep(1000);
-        DROP_WIZARD_SERVER.after();
-      }
+  @Synchronized
+  public static void stopServer() {
+    activeTestCount = activeTestCount - 1;
+    if (activeTestCount == 0) {
+      DROP_WIZARD_SERVER.after();
     }
   }
 }
