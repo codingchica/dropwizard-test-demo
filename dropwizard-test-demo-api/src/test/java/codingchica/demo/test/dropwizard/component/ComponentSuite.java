@@ -1,4 +1,4 @@
-package codingchica.demo.test.dropwizard.component.admin;
+package codingchica.demo.test.dropwizard.component;
 
 import static io.cucumber.junit.platform.engine.Constants.*;
 
@@ -12,13 +12,18 @@ import org.junit.platform.suite.api.Suite;
  * classpath directory. Additional settings are available in src/test/resources/cucumber.properties,
  * if desired. Those can either be specified using environment variables for the IDE or through the
  * CLI as an argument, if invoking cucumber directly using the CLI.
+ *
+ * <p># If running this test directly (not part of the Maven build) you will need to # set the
+ * following env/system properties that normally come from the Maven build: #
+ * project.artifactId=${project.artifactId} # project.version=${project.version}
  */
 @Suite
 @IncludeEngines("cucumber")
 @SelectClasspathResource(
     // Folder from which test scenarios are retrieved from feature file(s) in this folder.
     // This could also point to an individual feature file, if desired.
-    "features/adminPort")
+    // Relies upon filtered properties / dynamic values
+    "features")
 @ConfigurationParameter(
     // Package where the steps are defined for the tests in the feature file(s) selected.
     key = GLUE_PROPERTY_NAME,
@@ -34,7 +39,7 @@ import org.junit.platform.suite.api.Suite;
     // output the banner asking them to publish the reports.
     key = PLUGIN_PUBLISH_QUIET_PROPERTY_NAME,
     value = "true")
-public class AdminPortComponentSuite {
+public class ComponentSuite {
   // Actual tests are retrieved by reading the feature file(s) specified above.
   // No actual code is expected in this file.
 }
