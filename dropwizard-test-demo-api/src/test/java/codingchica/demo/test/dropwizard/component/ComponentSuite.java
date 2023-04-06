@@ -13,6 +13,9 @@ import org.junit.platform.suite.api.Suite;
  * if desired. Those can either be specified using environment variables for the IDE or through the
  * CLI as an argument, if invoking cucumber directly using the CLI.
  *
+ * <p>Only one class is used for the entire component test phase in order to more accurately report
+ * all the feature files that were executed in the 'target/component-test-reports/report.html'.
+ *
  * <p># If running this test directly (not part of the Maven build) you will need to # set the
  * following env/system properties that normally come from the Maven build: #
  * project.artifactId=${project.artifactId} # project.version=${project.version}
