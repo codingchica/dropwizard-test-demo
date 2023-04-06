@@ -5,6 +5,8 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.*;
 
 import codingchica.demo.test.dropwizard.core.config.DropwizardTestDemoConfiguration;
+import codingchica.demo.test.dropwizard.resources.PersonResource;
+import io.dropwizard.jersey.setup.JerseyEnvironment;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import java.io.ByteArrayOutputStream;
@@ -29,21 +31,28 @@ class DropwizardTestDemoApplicationTest {
 
   @Mock private DropwizardTestDemoConfiguration dropwizardTestDemoConfiguration;
   @Mock private Environment environment;
+  @Mock private JerseyEnvironment jerseyEnvironment;
   @Mock private Bootstrap<DropwizardTestDemoConfiguration> bootstrap;
 
   /** Unit tests for the run method. */
   @Nested
   class RunTest {
     @Test
-    void whenRunInvoked_thenNoInteractions() {
+    void whenRunInvoked_thenSetupAsExpected() {
       // Setup
+      when(environment.jersey()).thenReturn(jerseyEnvironment);
 
       // Execution
       dropwizardTestDemoApplication.run(dropwizardTestDemoConfiguration, environment);
 
       // Validation
       verifyNoInteractions(dropwizardTestDemoConfiguration);
-      verifyNoInteractions(environment);
+
+      verify(environment).jersey();
+      verifyNoMoreInteractions(environment);
+
+      verify(jerseyEnvironment).register(any(PersonResource.class));
+      verifyNoMoreInteractions(jerseyEnvironment);
     }
   }
 

@@ -2,7 +2,7 @@ package codingchica.demo.test.dropwizard.component.steps;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import codingchica.demo.test.dropwizard.component.ComponentTestServerFactory;
+import codingchica.demo.test.dropwizard.DropwizardTestDemoApplication;
 import codingchica.demo.test.dropwizard.component.model.APICallWorld;
 import codingchica.demo.test.dropwizard.core.config.DropwizardTestDemoConfiguration;
 import com.jayway.jsonpath.DocumentContext;
@@ -14,9 +14,11 @@ import io.cucumber.java.ParameterType;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
+import io.dropwizard.testing.ResourceHelpers;
 import io.dropwizard.testing.junit5.DropwizardAppExtension;
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URI;
@@ -29,7 +31,10 @@ import org.apache.commons.lang3.StringUtils;
 /** Cucumber steps that can be used for generic API calls to the Dropwizard server. */
 public class GenericAPISteps {
 
-  private static DropwizardAppExtension<DropwizardTestDemoConfiguration> DROP_WIZARD_SERVER;
+  private static DropwizardAppExtension<DropwizardTestDemoConfiguration> DROP_WIZARD_SERVER =
+      new DropwizardAppExtension<>(
+          DropwizardTestDemoApplication.class,
+          ResourceHelpers.resourceFilePath("appConfig/test-component.yml"));
 
   /**
    * State storage between steps. A separate copy will be created for each test / scenario, but not
@@ -55,16 +60,16 @@ public class GenericAPISteps {
   }
 
   @BeforeAll
-  public static void beforeAll() throws Exception {
-    DROP_WIZARD_SERVER = ComponentTestServerFactory.startServer();
+  public static void setup() throws Exception {
+    DROP_WIZARD_SERVER.before();
   }
 
   @AfterAll
-  public static void afterAll() throws InterruptedException {
-    ComponentTestServerFactory.stopServer();
+  public static void teardown() {
+    DROP_WIZARD_SERVER.after();
   }
 
-  @Given("that my request uses the {string} protocol")
+  @Given("that my request uses the {word} protocol")
   public void that_my_request_uses_the_protocol(String protocol) {
     world.protocol = protocol;
   }
@@ -95,9 +100,18 @@ public class GenericAPISteps {
     world.endpoint =
         String.format("%s://%s:%s/%s", world.protocol, world.server, world.port, world.path);
     world.url = new URI(world.endpoint).toURL();
+    System.out.printf("Calling %s - %s%n", world.httpMethod.name(), world.url);
     world.connection = (HttpURLConnection) world.url.openConnection();
+    System.out.println("Request headers: ");
     world.requestHeaders.forEach(
-        (header, value) -> world.connection.setRequestProperty(header, value));
+        (header, value) -> {
+          if (StringUtils.containsIgnoreCase(header, "Auth")) {
+            System.out.printf("   %s = <omitted>%n", header);
+          } else {
+            System.out.printf("   %s = %s%n", header, value);
+          }
+          world.connection.setRequestProperty(header, value);
+        });
     world.connection.setRequestMethod(world.httpMethod.name());
     world.connection.setDoOutput(true);
 
@@ -106,31 +120,40 @@ public class GenericAPISteps {
   }
 
   private String getResponseBody() throws IOException {
-    String responseReceived;
-    try (BufferedReader br =
-        new BufferedReader(
-            new InputStreamReader(world.connection.getInputStream(), StandardCharsets.UTF_8))) {
-      StringBuilder response = new StringBuilder();
-      String responseLine;
-      while ((responseLine = br.readLine()) != null) {
-        response.append(responseLine.trim());
+    String responseReceived = null;
+    InputStream responseBodyStream = null;
+    try {
+      responseBodyStream = world.connection.getInputStream();
+    } catch (IOException e) {
+      System.out.println("Exception while retrieving response body: " + e.getMessage());
+    }
+    if (responseBodyStream != null) {
+      try (BufferedReader br =
+          new BufferedReader(new InputStreamReader(responseBodyStream, StandardCharsets.UTF_8))) {
+        StringBuilder response = new StringBuilder();
+        String responseLine;
+        while ((responseLine = br.readLine()) != null) {
+          response.append(responseLine.trim());
+        }
+        responseReceived = response.toString();
       }
-      responseReceived = response.toString();
     }
     return responseReceived;
   }
 
   private String getResponseError() throws IOException {
-    String responseReceived;
-    try (BufferedReader br =
-        new BufferedReader(
-            new InputStreamReader(world.connection.getErrorStream(), StandardCharsets.UTF_8))) {
-      StringBuilder response = new StringBuilder();
-      String responseLine;
-      while ((responseLine = br.readLine()) != null) {
-        response.append(responseLine.trim());
+    String responseReceived = null;
+    InputStream errorStream = world.connection.getErrorStream();
+    if (errorStream != null) {
+      try (BufferedReader br =
+          new BufferedReader(new InputStreamReader(errorStream, StandardCharsets.UTF_8))) {
+        StringBuilder response = new StringBuilder();
+        String responseLine;
+        while ((responseLine = br.readLine()) != null) {
+          response.append(responseLine.trim());
+        }
+        responseReceived = response.toString();
       }
-      responseReceived = response.toString();
     }
     return responseReceived;
   }
@@ -150,13 +173,24 @@ public class GenericAPISteps {
 
   @Then("the response body is {word}")
   public void theResponseBodyEquals(String responseBody) throws IOException {
-    assertEquals(responseBody, getResponseBody(), "mismatch mismatch calling " + world.endpoint);
+    String actualResponseBody = getResponseBody();
+    String responseError = getResponseError();
+    assertNotNull(
+        actualResponseBody,
+        "Expected response body to not be null, but it was.  Here is the error body: "
+            + responseError);
+    assertEquals(responseBody, actualResponseBody, "mismatch mismatch calling " + world.endpoint);
   }
 
   @Then("the response body contains JSON data")
   public void theResponseBodyMatchesPattern(Map<String, String> expectedResponseData)
       throws IOException {
     String responseBody = getResponseBody();
+    String responseError = getResponseError();
+    assertNotNull(
+        responseBody,
+        "Expected response body to not be null, but it was.  Here is the error body: "
+            + responseError);
     DocumentContext jsonBody = JsonPath.parse(responseBody);
     assertNotNull(expectedResponseData, "expectedResponseData");
     assertNotNull(responseBody, "responseBody");
@@ -177,7 +211,12 @@ public class GenericAPISteps {
   @Then("the error response body contains JSON data")
   public void theResponseErrorMatchesPattern(Map<String, String> expectedResponseData)
       throws IOException {
+    String responseBody = getResponseBody();
     String responseError = getResponseError();
+    assertNotNull(
+        responseError,
+        "Expected response error to not be null, but it was.  Here is the regular body: "
+            + responseBody);
     DocumentContext jsonBody = JsonPath.parse(responseError);
     assertNotNull(expectedResponseData, "expectedResponseData");
     assertNotNull(responseError, "responseError");
@@ -199,16 +238,23 @@ public class GenericAPISteps {
   public void theResponseBodyMatchesPattern(List<String> expectedResponseSnippets)
       throws IOException {
     String responseBody = getResponseBody();
+    String responseError = getResponseError();
+    assertNotNull(
+        responseBody,
+        "Expected response body to not be null, but it was.  Here is the error body: "
+            + responseError);
     assertNotNull(expectedResponseSnippets, "expectedResponseSnippets");
     assertNotNull(responseBody, "responseBody");
     expectedResponseSnippets.forEach(
         (value) -> {
-          try {
-            assertTrue(StringUtils.contains(responseBody, value));
-          } catch (Throwable t) {
-            throw new IllegalArgumentException(
-                "No hit for '" + value + "' in response:\n" + responseBody, t);
-          }
+          assertTrue(
+              StringUtils.contains(responseBody, value),
+              "No hit for '"
+                  + value
+                  + "' in response:\n"
+                  + responseBody
+                  + "\nSee also errorResponse:\n"
+                  + responseError);
         });
   }
 

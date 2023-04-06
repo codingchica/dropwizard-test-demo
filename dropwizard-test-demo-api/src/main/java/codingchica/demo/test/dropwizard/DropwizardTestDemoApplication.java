@@ -1,6 +1,7 @@
 package codingchica.demo.test.dropwizard;
 
 import codingchica.demo.test.dropwizard.core.config.DropwizardTestDemoConfiguration;
+import codingchica.demo.test.dropwizard.resources.PersonResource;
 import io.dropwizard.Application;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
@@ -49,6 +50,16 @@ public class DropwizardTestDemoApplication extends Application<DropwizardTestDem
   }
 
   /**
+   * Construct a new PersonResource object. Exposing this as a separate method, even though the
+   * logic is simple, in case we need to modify the behavior during any testing.
+   *
+   * @return A PersonResource object.
+   */
+  public PersonResource personResource() {
+    return new PersonResource();
+  }
+
+  /**
    * Execute the DropWizard application with the specified configuration and environment settings.
    * This is where you would add filters, health checks, health, Jersey providers, Managed Objects,
    * servlets, and tasks.
@@ -71,6 +82,7 @@ public class DropwizardTestDemoApplication extends Application<DropwizardTestDem
   @Override
   public void run(
       final DropwizardTestDemoConfiguration configuration, final Environment environment) {
-    // Nothing to do yet.
+    // Resources that will be used by the application.
+    environment.jersey().register(personResource());
   }
 }
