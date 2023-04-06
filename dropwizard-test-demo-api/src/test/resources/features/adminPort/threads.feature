@@ -5,7 +5,7 @@ Feature: Threads API
   Background:
     Given that my request uses the 'http' protocol
     And that my request goes to the admin port
-    And that my request goes to endpoint 'threads'
+    And that my request goes to endpoint threads
 
   @Component
   Scenario Outline: Metrics API GET call returns successful response.

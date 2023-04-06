@@ -5,7 +5,7 @@ Feature: Ping API
   Background:
     Given that my request uses the 'http' protocol
     And that my request goes to the admin port
-    And that my request goes to endpoint 'ping'
+    And that my request goes to endpoint ping
 
   @Component
   Scenario Outline: Ping API GET call returns successful response.

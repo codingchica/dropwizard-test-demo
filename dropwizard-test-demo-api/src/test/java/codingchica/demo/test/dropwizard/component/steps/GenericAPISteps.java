@@ -69,7 +69,7 @@ public class GenericAPISteps {
     world.protocol = protocol;
   }
 
-  @Given("that my request goes to endpoint {string}")
+  @Given("that my request goes to endpoint {word}")
   public void setPath(String path) {
     world.path = path;
   }
@@ -120,6 +120,21 @@ public class GenericAPISteps {
     return responseReceived;
   }
 
+  private String getResponseError() throws IOException {
+    String responseReceived;
+    try (BufferedReader br =
+        new BufferedReader(
+            new InputStreamReader(world.connection.getErrorStream(), StandardCharsets.UTF_8))) {
+      StringBuilder response = new StringBuilder();
+      String responseLine;
+      while ((responseLine = br.readLine()) != null) {
+        response.append(responseLine.trim());
+      }
+      responseReceived = response.toString();
+    }
+    return responseReceived;
+  }
+
   @Then("the response code is {int}")
   public void theResponseCodeMatches(int expectedResponseCode) throws IOException {
     // Validation
@@ -149,11 +164,32 @@ public class GenericAPISteps {
         (path, value) -> {
           try {
             assertEquals(
-                jsonBody.read(path).toString(),
                 value,
+                jsonBody.read(path).toString(),
                 "Mismatch on '" + path + "' in response = " + responseBody);
           } catch (Throwable t) {
             System.out.println("Response: " + responseBody);
+            throw t;
+          }
+        });
+  }
+
+  @Then("the error response body contains JSON data")
+  public void theResponseErrorMatchesPattern(Map<String, String> expectedResponseData)
+      throws IOException {
+    String responseError = getResponseError();
+    DocumentContext jsonBody = JsonPath.parse(responseError);
+    assertNotNull(expectedResponseData, "expectedResponseData");
+    assertNotNull(responseError, "responseError");
+    expectedResponseData.forEach(
+        (path, value) -> {
+          try {
+            assertEquals(
+                value,
+                jsonBody.read(path).toString(),
+                "Mismatch on '" + path + "' in response = " + responseError);
+          } catch (Throwable t) {
+            System.out.println("Response: " + responseError);
             throw t;
           }
         });

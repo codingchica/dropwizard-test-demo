@@ -5,7 +5,7 @@ Feature: Health check API
   Background:
     Given that my request uses the 'http' protocol
     And that my request goes to the admin port
-    And that my request goes to endpoint 'healthcheck'
+    And that my request goes to endpoint healthcheck
 
   @Component
   Scenario Outline: Health check API GET call returns successful response.
