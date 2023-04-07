@@ -17,13 +17,17 @@ Feature: CLI Help
     When I run the CLI command until it stops
     Then the cli exit code is 0
     And CLI standard error is empty
-    And CLI standard output contains the normalized line 'usage: java -jar ${project.artifactId}-${project.version}.jar'
-    And CLI standard output contains the normalized line '       [-h] [-v] {server,check} ...'
-    And CLI standard output contains the normalized line 'positional arguments:'
-    And CLI standard output contains the normalized line '  {server,check}         available commands'
-    And CLI standard output contains the normalized line 'named arguments:'
-    And CLI standard output contains the normalized line '  -h, --help             show this help message and exit'
-    And CLI standard output contains the normalized line '  -v, --version          show the application version and exit'
+    And CLI standard output matches the lines
+      | usage: java -jar ${project.artifactId}-${project.version}.jar |
+      | [-h] [-v] {server,check,GetPerson} ...                        |
+      |                                                               |
+      | positional arguments:                                         |
+      | {server,check,GetPerson}                                      |
+      | available commands                                            |
+      |                                                               |
+      | named arguments:                                              |
+      | -h, --help             show this help message and exit        |
+      | -v, --version          show the application version and exit  |
     Examples:
       | Argument |
       | -h       |

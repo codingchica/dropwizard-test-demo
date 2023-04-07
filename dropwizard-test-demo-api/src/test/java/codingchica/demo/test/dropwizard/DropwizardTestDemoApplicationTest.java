@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.*;
 
+import codingchica.demo.test.dropwizard.cli.GetPersonCommand;
 import codingchica.demo.test.dropwizard.core.config.DropwizardTestDemoConfiguration;
 import codingchica.demo.test.dropwizard.resources.PersonResource;
 import io.dropwizard.jersey.setup.JerseyEnvironment;
@@ -18,6 +19,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -62,12 +64,18 @@ class DropwizardTestDemoApplicationTest {
     @Test
     void whenInitializeInvoked_thenSuccess() {
       // Setup
+      ArgumentCaptor<GetPersonCommand> addCommandCaptor =
+          ArgumentCaptor.forClass(GetPersonCommand.class);
 
       // Execution
       dropwizardTestDemoApplication.initialize(bootstrap);
 
       // Validation
-      verifyNoInteractions(bootstrap);
+      verify(bootstrap).addCommand(addCommandCaptor.capture());
+      GetPersonCommand getPersonCommand = addCommandCaptor.getValue();
+      assertEquals("GetPerson", getPersonCommand.getName(), "name");
+      assertEquals("Retrieve a person by ID.", getPersonCommand.getDescription(), "description");
+      verifyNoMoreInteractions(bootstrap);
     }
   }
 
@@ -93,10 +101,10 @@ class DropwizardTestDemoApplicationTest {
     private final String usageInfo =
         StringUtils.normalizeSpace(
             """
-usage: java -jar project.jar [-h] [-v] {server,check} ...
+usage: java -jar project.jar [-h] [-v] {server,check,GetPerson} ...
 
 positional arguments:
-  {server,check}         available commands
+  {server,check,GetPerson}         available commands
 
 named arguments:
   -h, --help             show this help message and exit

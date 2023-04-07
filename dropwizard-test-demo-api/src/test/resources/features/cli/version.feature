@@ -16,7 +16,7 @@ Feature: CLI Version
       | <Argument>                                          |
     When I run the CLI command until it stops
     Then the cli exit code is 0
-    And CLI standard output contains the normalized line '${project.version}'
+    And CLI standard output contains the line '${project.version}'
     And CLI standard error is empty
     Examples:
       | Argument  |

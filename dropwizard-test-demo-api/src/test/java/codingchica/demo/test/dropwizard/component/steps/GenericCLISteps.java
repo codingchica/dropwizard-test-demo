@@ -15,6 +15,7 @@ import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import lombok.NonNull;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -28,7 +29,7 @@ public class GenericCLISteps {
   private final File workingDirectory = new File(System.getProperty("user.dir"));
 
   private String replaceSystemProperties(String stringValue) {
-    String returnValue = stringValue;
+    String returnValue = StringUtils.trimToEmpty(stringValue);
     if (returnValue != null && StringUtils.contains(returnValue, "${")) {
       for (Map.Entry<Object, Object> entry : System.getProperties().entrySet()) {
         if (entry.getKey() instanceof String prop && entry.getValue() instanceof String value) {
@@ -166,7 +167,7 @@ public class GenericCLISteps {
 
   @Then("the cli exit code is {int}")
   public void confirmExitCode(int expectedCode) {
-    assertEquals(expectedCode, world.exitCode, "Exit code");
+    assertEquals(expectedCode, world.exitCode, "Exit code:  " + world.outputLines);
   }
 
   private boolean containsFullLineMatch(String expectedOutput, List<String> actualOutput) {
@@ -174,13 +175,7 @@ public class GenericCLISteps {
     boolean match = false;
     if (actualOutput != null) {
 
-      match =
-          actualOutput.stream()
-              .anyMatch(
-                  (item) ->
-                      StringUtils.equals(
-                          StringUtils.normalizeSpace(item),
-                          StringUtils.normalizeSpace(expectedOutput)));
+      match = actualOutput.stream().anyMatch((item) -> StringUtils.equals(item, expectedOutput));
     }
     return match;
   }
@@ -190,18 +185,21 @@ public class GenericCLISteps {
     boolean match = false;
     if (actualOutput != null) {
 
-      match =
-          actualOutput.stream()
-              .anyMatch(
-                  (item) ->
-                      StringUtils.contains(
-                          StringUtils.normalizeSpace(item),
-                          StringUtils.normalizeSpace(expectedOutput)));
+      match = actualOutput.stream().anyMatch((item) -> StringUtils.contains(item, expectedOutput));
     }
     return match;
   }
 
-  @Then("CLI standard output contains the normalized line {string}")
+  @Then("CLI standard output matches the lines")
+  public void outputContainsFullLine(@NonNull List<String> expectedOutput) {
+    List<String> interpretedOutput =
+        expectedOutput.stream().map((item) -> replaceSystemProperties(item).trim()).toList();
+    List<String> actualOutput =
+        world.outputLines.stream().map((item) -> replaceSystemProperties(item).trim()).toList();
+    assertLinesMatch(interpretedOutput, actualOutput, actualOutput.toString());
+  }
+
+  @Then("CLI standard output contains the line {string}")
   public void outputContainsFullLine(String expectedOutput) {
     String interpretedOutput = replaceSystemProperties(expectedOutput);
     assertTrue(
@@ -220,7 +218,7 @@ public class GenericCLISteps {
             + world.outputLines);
   }
 
-  @Then("CLI standard error contains the normalized line {word}")
+  @Then("CLI standard error contains the line {word}")
   public void errorContainsFullLine(String expectedOutput) {
     String interpretedOutput = replaceSystemProperties(expectedOutput);
     assertTrue(

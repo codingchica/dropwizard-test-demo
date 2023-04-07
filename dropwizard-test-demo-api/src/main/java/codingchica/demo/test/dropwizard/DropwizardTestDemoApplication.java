@@ -1,5 +1,6 @@
 package codingchica.demo.test.dropwizard;
 
+import codingchica.demo.test.dropwizard.cli.GetPersonCommand;
 import codingchica.demo.test.dropwizard.core.config.DropwizardTestDemoConfiguration;
 import codingchica.demo.test.dropwizard.resources.PersonResource;
 import io.dropwizard.Application;
@@ -47,6 +48,8 @@ public class DropwizardTestDemoApplication extends Application<DropwizardTestDem
     //        new SubstitutingSourceProvider(
     //            bootstrap.getConfigurationSourceProvider(), new
     // EnvironmentVariableSubstitutor()));
+
+    bootstrap.addCommand(getPersonCommand());
   }
 
   /**
@@ -57,6 +60,16 @@ public class DropwizardTestDemoApplication extends Application<DropwizardTestDem
    */
   public PersonResource personResource() {
     return new PersonResource();
+  }
+
+  /**
+   * Construct a new GetPersonCommand object. Exposing this as a separate method, even though the
+   * logic is simple, in case we need to modify the behavior during any testing.
+   *
+   * @return A GetPersonCommand object.
+   */
+  public GetPersonCommand getPersonCommand() {
+    return new GetPersonCommand(this, "GetPerson", "Retrieve a person by ID.");
   }
 
   /**
