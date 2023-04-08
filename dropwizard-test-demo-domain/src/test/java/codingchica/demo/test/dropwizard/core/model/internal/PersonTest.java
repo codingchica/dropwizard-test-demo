@@ -1,10 +1,11 @@
-package codingchica.demo.test.dropwizard.core.model.external;
+package codingchica.demo.test.dropwizard.core.model.internal;
 
 import static codingchica.demo.test.dropwizard.util.EqualsHashCodeTester.*;
 import static codingchica.demo.test.dropwizard.util.GetterSetterTester.valueRetrievedCorrectly;
 import static codingchica.demo.test.dropwizard.util.WithTester.verifyWithValueCopyBehavior;
 import static io.dropwizard.jackson.Jackson.newObjectMapper;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
@@ -19,8 +20,7 @@ import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 class PersonTest {
-  final Person person =
-      Person.builder().id(1).firstName("John").lastName("Doe").nickName("Johnny").build();
+  final Person person = Person.builder().id(1).first("John").last("Doe").nickName("Johnny").build();
 
   @Nested
   class ToStringTest {
@@ -35,7 +35,7 @@ class PersonTest {
       String result = person.toString();
 
       // Validation
-      assertEquals("Person(id=0, firstName=null, lastName=null, nickName=null)", result);
+      assertEquals("Person(id=0, first=null, last=null, nickName=null)", result);
     }
 
     /** Ensure toString output would be helpful for debugging. */
@@ -49,8 +49,7 @@ class PersonTest {
       String result = personBuilder.toString();
 
       // Validation
-      assertEquals(
-          "Person.PersonBuilder(id=0, firstName=null, lastName=null, nickName=null)", result);
+      assertEquals("Person.PersonBuilder(id=0, first=null, last=null, nickName=null)", result);
     }
   }
 
@@ -78,8 +77,8 @@ class PersonTest {
    */
   @Nested
   class FirstNameTest {
-    private final Method getter = Person.class.getDeclaredMethod("getFirstName");
-    private final Method setter = Person.class.getDeclaredMethod("setFirstName", String.class);
+    private final Method getter = Person.class.getDeclaredMethod("getFirst");
+    private final Method setter = Person.class.getDeclaredMethod("setFirst", String.class);
 
     FirstNameTest() throws NoSuchMethodException {}
 
@@ -97,8 +96,8 @@ class PersonTest {
    */
   @Nested
   class LastNameTest {
-    private final Method getter = Person.class.getDeclaredMethod("getLastName");
-    private final Method setter = Person.class.getDeclaredMethod("setLastName", String.class);
+    private final Method getter = Person.class.getDeclaredMethod("getLast");
+    private final Method setter = Person.class.getDeclaredMethod("setLast", String.class);
 
     LastNameTest() throws NoSuchMethodException {}
 
@@ -135,9 +134,9 @@ class PersonTest {
     @Test
     void testEqualsAndHashCodeMatch() {
       // Force duplication
-      Person matchingPerson = person.withFirstName("new name");
+      Person matchingPerson = person.withFirst("new name");
       // Reset to original value
-      matchingPerson.setFirstName(person.getFirstName());
+      matchingPerson.setFirst(person.getFirst());
 
       verifyEqualsCanEqualAndHashCodeForMatch(person, person);
       verifyEqualsCanEqualAndHashCodeForMatch(person, matchingPerson);
@@ -150,15 +149,13 @@ class PersonTest {
       verifyEqualsCanEqualAndHashCodeForNotMatch(person.withId(-2), person);
       verifyEqualsCanEqualAndHashCodeForNotMatch(person, person.withId(200));
 
-      verifyEqualsCanEqualAndHashCodeForNotMatch(person.withFirstName(null), person);
-      verifyEqualsCanEqualAndHashCodeForNotMatch(person, person.withFirstName(null));
-      verifyEqualsCanEqualAndHashCodeForNotMatch(
-          person, person.withFirstName("Some other first name"));
+      verifyEqualsCanEqualAndHashCodeForNotMatch(person.withFirst(null), person);
+      verifyEqualsCanEqualAndHashCodeForNotMatch(person, person.withFirst(null));
+      verifyEqualsCanEqualAndHashCodeForNotMatch(person, person.withFirst("Some other first name"));
 
-      verifyEqualsCanEqualAndHashCodeForNotMatch(person.withLastName(null), person);
-      verifyEqualsCanEqualAndHashCodeForNotMatch(person, person.withLastName(null));
-      verifyEqualsCanEqualAndHashCodeForNotMatch(
-          person, person.withLastName("Some other last name"));
+      verifyEqualsCanEqualAndHashCodeForNotMatch(person.withLast(null), person);
+      verifyEqualsCanEqualAndHashCodeForNotMatch(person, person.withLast(null));
+      verifyEqualsCanEqualAndHashCodeForNotMatch(person, person.withLast("Some other last name"));
 
       verifyEqualsCanEqualAndHashCodeForNotMatch(person.withNickName(null), person);
       verifyEqualsCanEqualAndHashCodeForNotMatch(person, person.withNickName(null));
@@ -179,15 +176,15 @@ class PersonTest {
     @Test
     void testWithFirstName()
         throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
-      final Method withMethod = Person.class.getDeclaredMethod("withFirstName", String.class);
-      verifyWithValueCopyBehavior(person, person.getFirstName(), "some other value", withMethod);
+      final Method withMethod = Person.class.getDeclaredMethod("withFirst", String.class);
+      verifyWithValueCopyBehavior(person, person.getFirst(), "some other value", withMethod);
     }
 
     @Test
     void testWithLastName()
         throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
-      final Method withMethod = Person.class.getDeclaredMethod("withLastName", String.class);
-      verifyWithValueCopyBehavior(person, person.getLastName(), "some other value", withMethod);
+      final Method withMethod = Person.class.getDeclaredMethod("withLast", String.class);
+      verifyWithValueCopyBehavior(person, person.getLast(), "some other value", withMethod);
     }
 
     @Test
@@ -202,7 +199,7 @@ class PersonTest {
   class SerializationTest {
     private static final ObjectMapper MAPPER = newObjectMapper();
     private final Person fixturePerson =
-        MAPPER.readValue(getClass().getResource("/fixtures/external/person.json"), Person.class);
+        MAPPER.readValue(getClass().getResource("/fixtures/internal/person.json"), Person.class);
 
     SerializationTest() throws IOException {}
 
@@ -212,7 +209,7 @@ class PersonTest {
       final String expected = MAPPER.writeValueAsString(fixturePerson);
       String[] expectedSnippets =
           new String[] {
-            "\"id\":1", "\"firstName\":\"John\"", "\"lastName\":\"Doe\"", "\"nickName\":\"Johnny\""
+            "\"id\":1", "\"first\":\"John\"", "\"last\":\"Doe\"", "\"nickName\":\"Johnny\""
           };
 
       // Execution
@@ -238,8 +235,8 @@ class PersonTest {
       // Validation
       assertEquals(fixturePerson, person);
       assertEquals(1, fixturePerson.getId());
-      assertEquals("John", fixturePerson.getFirstName());
-      assertEquals("Doe", fixturePerson.getLastName());
+      assertEquals("John", fixturePerson.getFirst());
+      assertEquals("Doe", fixturePerson.getLast());
       assertEquals("Johnny", fixturePerson.getNickName());
     }
   }

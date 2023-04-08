@@ -15,6 +15,7 @@
   <packaging>jar</packaging>
 
   <name>dropwizard-test-demo-domain</name>
+  <description>The POJOs / model that make up the domain serviced by the domain that encompasses dropwizard-test-demo's scope of responsibility.</description>
 
   <dependencies>
     <!-- Runtime dependencies -->
@@ -68,6 +69,10 @@
       <groupId>org.projectlombok</groupId>
       <artifactId>lombok</artifactId>
       <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.mapstruct</groupId>
+      <artifactId>mapstruct</artifactId>
     </dependency>
 
     <!-- Test dependencies -->
@@ -271,6 +276,12 @@
         <!-- https://maven.apache.org/plugins/maven-javadoc-plugin/ -->
         <artifactId>maven-javadoc-plugin</artifactId>
         <version>${maven.javadoc.plugin.version}</version>
+        <configuration>
+          <sourceFileExcludes>
+            <!-- Wholly generated files -->
+            <sourceFileExclude>**/codingchica/demo/test/dropwizard/core/model/mappers/*.java</sourceFileExclude>
+          </sourceFileExcludes>
+        </configuration>
       </plugin>
       <plugin>
         <!-- https://maven.apache.org/plugins/maven-checkstyle-plugin/ -->

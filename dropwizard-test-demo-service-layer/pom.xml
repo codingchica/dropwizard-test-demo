@@ -10,16 +10,12 @@
     <relativePath>../pom.xml</relativePath>
   </parent>
 
-  <artifactId>dropwizard-test-demo-api</artifactId>
+  <artifactId>dropwizard-test-demo-service-layer</artifactId>
   <version>0.1-SNAPSHOT</version>
   <packaging>jar</packaging>
 
-  <name>dropwizard-test-demo-api</name>
-  <description>The dropwizard-test-demo's interface layer - CLI and Web services exposed for consumption.</description>
-
-  <properties>
-    <mainClass>codingchica.demo.test.dropwizard.DropwizardTestDemoApplication</mainClass>
-  </properties>
+  <name>dropwizard-test-demo-service-layer</name>
+  <description>The dropwizard-test-demo's available operations and coordinated response to each.  The business logic for the application.</description>
 
   <dependencies>
     <!-- Runtime dependencies -->
@@ -79,19 +75,8 @@
       <artifactId>dropwizard-test-demo-domain</artifactId>
       <version>${project.version}</version>
     </dependency>
-    <dependency>
-      <groupId>${project.groupId}</groupId>
-      <artifactId>dropwizard-test-demo-service-layer</artifactId>
-      <version>${project.version}</version>
-    </dependency>
 
     <!-- Test dependencies -->
-    <dependency>
-      <groupId>${project.groupId}</groupId>
-      <artifactId>dropwizard-test-demo-domain</artifactId>
-      <classifier>tests</classifier>
-      <scope>test</scope>
-    </dependency>
     <dependency>
       <!--
             https://github.com/dropwizard/dropwizard/tree/release/2.1.x/dropwizard-testing
@@ -190,40 +175,6 @@
     </resources>
     <plugins>
       <plugin>
-        <!-- https://maven.apache.org/plugins/maven-shade-plugin/ -->
-        <artifactId>maven-shade-plugin</artifactId>
-        <version>${maven.shade.plugin.version}</version>
-        <configuration>
-          <createDependencyReducedPom>true</createDependencyReducedPom>
-          <transformers>
-            <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
-            <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-              <mainClass>${mainClass}</mainClass>
-            </transformer>
-          </transformers>
-          <!-- exclude signed Manifests -->
-          <filters>
-            <filter>
-              <artifact>*:*</artifact>
-              <excludes>
-                <exclude>META-INF/*.SF</exclude>
-                <exclude>META-INF/*.DSA</exclude>
-                <exclude>META-INF/*.RSA</exclude>
-              </excludes>
-            </filter>
-          </filters>
-        </configuration>
-        <executions>
-          <execution>
-            <id>shade-jar</id>
-            <goals>
-              <goal>shade</goal>
-            </goals>
-            <phase>package</phase>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
         <!-- https://github.com/diffplug/spotless/tree/main/plugin-maven -->
         <groupId>com.diffplug.spotless</groupId>
         <artifactId>spotless-maven-plugin</artifactId>
@@ -231,13 +182,15 @@
       <plugin>
         <!-- https://maven.apache.org/plugins/maven-jar-plugin/ -->
         <artifactId>maven-jar-plugin</artifactId>
-        <configuration>
-          <archive>
-            <manifest>
-              <mainClass>${mainClass}</mainClass>
-            </manifest>
-          </archive>
-        </configuration>
+        <executions>
+          <execution>
+            <!-- Test utils are reused in other layers. -->
+            <id>test-jar</id>
+            <goals>
+              <goal>test-jar</goal>
+            </goals>
+          </execution>
+        </executions>
       </plugin>
       <plugin>
         <!-- https://maven.apache.org/plugins/maven-compiler-plugin/ -->
