@@ -1,8 +1,8 @@
 package codingchica.demo.test.dropwizard;
 
-import codingchica.demo.test.dropwizard.cli.GetPersonCommand;
+import codingchica.demo.test.dropwizard.api.commands.GetPersonCommand;
+import codingchica.demo.test.dropwizard.api.resources.PersonResource;
 import codingchica.demo.test.dropwizard.core.config.DropwizardTestDemoConfiguration;
-import codingchica.demo.test.dropwizard.resources.PersonResource;
 import io.dropwizard.Application;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;

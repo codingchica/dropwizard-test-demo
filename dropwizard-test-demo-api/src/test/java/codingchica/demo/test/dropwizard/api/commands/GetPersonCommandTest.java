@@ -1,4 +1,4 @@
-package codingchica.demo.test.dropwizard.cli;
+package codingchica.demo.test.dropwizard.api.commands;
 
 import static io.dropwizard.jackson.Jackson.newObjectMapper;
 import static org.junit.jupiter.api.Assertions.*;

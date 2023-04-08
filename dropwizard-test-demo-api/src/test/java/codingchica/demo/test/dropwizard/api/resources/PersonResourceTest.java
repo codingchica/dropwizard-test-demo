@@ -1,4 +1,4 @@
-package codingchica.demo.test.dropwizard.resources;
+package codingchica.demo.test.dropwizard.api.resources;
 
 import static org.junit.jupiter.api.Assertions.*;
 
