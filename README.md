@@ -1,4 +1,5 @@
 # dropwizard-test-demo
+[![Java CI with Maven](https://github.com/codingchica/dropwizard-test-demo/actions/workflows/maven.yml/badge.svg?branch=main)](https://github.com/codingchica/dropwizard-test-demo/actions/workflows/maven.yml)
 
 ## Testing Resources
 
