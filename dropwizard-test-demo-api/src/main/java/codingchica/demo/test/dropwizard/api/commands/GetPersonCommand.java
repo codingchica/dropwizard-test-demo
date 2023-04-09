@@ -2,12 +2,12 @@ package codingchica.demo.test.dropwizard.api.commands;
 
 import codingchica.demo.test.dropwizard.core.config.DropwizardTestDemoConfiguration;
 import codingchica.demo.test.dropwizard.core.model.external.Person;
+import codingchica.demo.test.dropwizard.service.PersonService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Preconditions;
 import io.dropwizard.Application;
 import io.dropwizard.cli.EnvironmentCommand;
 import io.dropwizard.setup.Environment;
-import lombok.NonNull;
 import net.sourceforge.argparse4j.inf.Namespace;
 import net.sourceforge.argparse4j.inf.Subparser;
 
@@ -18,6 +18,9 @@ public class GetPersonCommand extends EnvironmentCommand<DropwizardTestDemoConfi
    * with the namespace.
    */
   private static final String NAMESPACE_KEY_ID = "id";
+
+  /** The person service that will be providing the business logic for people. */
+  private final PersonService personService = new PersonService();
 
   /**
    * Constructor for the Get Person CLI command.
@@ -38,7 +41,7 @@ public class GetPersonCommand extends EnvironmentCommand<DropwizardTestDemoConfi
    * @return The existing Person object to return on the response.
    */
   private Person getPerson(int id) {
-    return Person.builder().id(id).firstName("John").lastName("Doe").nickName("Johnny").build();
+    return personService.getPersonById(id);
   }
 
   /**
@@ -55,7 +58,6 @@ public class GetPersonCommand extends EnvironmentCommand<DropwizardTestDemoConfi
       Namespace namespace,
       DropwizardTestDemoConfiguration dropwizardTestDemoConfiguration)
       throws Exception {
-    // TODO for now this is hard coded, but will need to hook this up to persistence for retrieval.
     Preconditions.checkNotNull(namespace, "namespace must not be null");
     int id = namespace.getInt(NAMESPACE_KEY_ID);
 
@@ -77,8 +79,10 @@ public class GetPersonCommand extends EnvironmentCommand<DropwizardTestDemoConfi
    *     command's configuration.
    */
   @Override
-  public void configure(@NonNull Subparser subparser) {
+  public void configure(Subparser subparser) {
     Preconditions.checkNotNull(subparser, "subparser must not be null");
+    // Consume a configuration file input, confirm subparser is not null
+    super.configure(subparser);
     subparser
         .addArgument("--id")
         .dest(NAMESPACE_KEY_ID)

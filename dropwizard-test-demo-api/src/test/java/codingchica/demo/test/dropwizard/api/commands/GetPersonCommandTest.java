@@ -98,21 +98,27 @@ class GetPersonCommandTest {
     @Test
     void configure_populated() {
       // Setup
-      lenient().when(subparser.addArgument(any())).thenReturn(argument);
-      lenient().when(argument.dest(any())).thenReturn(argument);
-      lenient().when(argument.type(int.class)).thenReturn(argument);
-      lenient().when(argument.required(anyBoolean())).thenReturn(argument);
-      lenient().when(argument.help(any(String.class))).thenReturn(argument);
+      when(subparser.addArgument(any())).thenReturn(argument);
+      when(argument.dest(any())).thenReturn(argument);
+      when(argument.type(int.class)).thenReturn(argument);
+      when(argument.required(anyBoolean())).thenReturn(argument);
+      when(argument.help(any(String.class))).thenReturn(argument);
+      when(argument.nargs("?")).thenReturn(argument);
 
       // Execution
       getPersonCommand.configure(subparser);
 
       // Validation
       verify(subparser).addArgument("--id");
+      verify(subparser).addArgument("file");
+      verify(argument).help("application configuration file");
       verify(argument).dest("id");
       verify(argument).type(int.class);
       verify(argument).required(true);
       verify(argument).help("The unique identifier (ID) of the person to retrieve.");
+      verify(argument).nargs("?");
+      verifyNoMoreInteractions(argument);
+      verifyNoMoreInteractions(subparser);
     }
 
     @Test
@@ -220,6 +226,7 @@ class GetPersonCommandTest {
 
     private Cli cli = null;
     private String cliCommand = "GetPerson";
+    private static final String CONFIG_FILE = "src/test/resources/appConfig/test-component.yml";
 
     @BeforeEach
     void setUp() throws Exception {
@@ -252,7 +259,7 @@ class GetPersonCommandTest {
           "{\"id\":1,\"firstName\":\"John\",\"lastName\":\"Doe\",\"nickName\":\"Johnny\"}";
 
       // Execution
-      final Optional<Throwable> exception = cli.run(cliCommand, "--id", "1");
+      final Optional<Throwable> exception = cli.run(cliCommand, "--id", "1", CONFIG_FILE);
 
       // Validation
       String stdOutContents = stdOut.toString();

@@ -2,7 +2,6 @@ package codingchica.demo.test.dropwizard.util;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import io.dropwizard.jersey.validation.ConstraintMessage;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -82,7 +81,10 @@ public class AnnotationValidationUtils {
     List<String> interpretedValues = new ArrayList<>();
     if (violations != null) {
       // Returns error messages like 'someFeatureFlag must not be null'
-      violations.forEach((item) -> interpretedValues.add(ConstraintMessage.getMessage(item, null)));
+      violations.forEach(
+          (item) ->
+              interpretedValues.add(
+                  String.format("%s %s", item.getPropertyPath(), item.getMessage())));
     }
     return interpretedValues;
   }

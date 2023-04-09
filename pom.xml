@@ -483,7 +483,6 @@
     <modules>
         <!-- TODO uncomment the sub-modules as they are ready to be consumed by the build. -->
         <module>dropwizard-test-demo-api</module>
-        <!--        <module>dropwizard-test-demo-client</module>-->
         <module>dropwizard-test-demo-domain</module>
         <!--        <module>dropwizard-test-demo-gateways</module>-->
         <!--        <module>dropwizard-test-demo-persistence</module>-->

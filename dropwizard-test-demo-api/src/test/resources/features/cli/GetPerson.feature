@@ -17,6 +17,7 @@ Feature: CLI GetPerson
         | target/${project.artifactId}-${project.version}.jar |
         | GetPerson                                           |
         | <argument>                                          |
+        | src/test/resources/appConfig/test-component.yml     |
       When I run the CLI command until it stops
       Then the cli exit code is 1
       And CLI standard error is empty
@@ -37,6 +38,7 @@ Feature: CLI GetPerson
         | GetPerson                                           |
         | --id                                                |
         | <id>                                                |
+        | src/test/resources/appConfig/test-component.yml     |
       When I run the CLI command until it stops
       Then the cli exit code is 1
       And CLI standard error is empty
@@ -57,6 +59,7 @@ Feature: CLI GetPerson
         | GetPerson                                           |
         | --id                                                |
         | <id>                                                |
+        | src/test/resources/appConfig/test-component.yml     |
       When I run the CLI command until it stops
       Then the cli exit code is 1
       And CLI standard error is empty
@@ -80,6 +83,7 @@ Feature: CLI GetPerson
         | GetPerson                                           |
         | --id                                                |
         | 1                                                   |
+        | src/test/resources/appConfig/test-component.yml     |
       When I run the CLI command until it stops
       Then the cli exit code is 0
       And CLI standard error is empty
