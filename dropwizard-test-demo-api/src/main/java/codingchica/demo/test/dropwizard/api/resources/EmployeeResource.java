@@ -1,7 +1,9 @@
 package codingchica.demo.test.dropwizard.api.resources;
 
 import codingchica.demo.test.dropwizard.core.model.external.Employee;
+import codingchica.demo.test.dropwizard.service.EmployeeService;
 import com.codahale.metrics.annotation.Timed;
+import com.google.common.base.Preconditions;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
 import javax.ws.rs.GET;
@@ -15,6 +17,19 @@ import org.hibernate.validator.constraints.Length;
 @Path("/employees")
 @Produces(MediaType.APPLICATION_JSON)
 public class EmployeeResource {
+
+  /** The service which will be used to store/retrieve/modify employee data. */
+  private final EmployeeService employeeService;
+
+  /**
+   * Constructor for the employee resource.
+   *
+   * @param employeeService The service which will be used to store/retrieve/modify employee data.
+   */
+  public EmployeeResource(EmployeeService employeeService) {
+    Preconditions.checkNotNull(employeeService, "employeeService must not be null");
+    this.employeeService = employeeService;
+  }
 
   /**
    * Retrieve an existing employee by GUID.
@@ -32,12 +47,6 @@ public class EmployeeResource {
               message = "Must contain only alphanumeric characters.")
           @PathParam("guid")
           String guid) {
-    // TODO call service and return retrieved info.
-    return Employee.builder()
-        .guid(guid)
-        .firstName("John")
-        .lastName("Doe")
-        .nickName("Johnny")
-        .build();
+    return employeeService.getEmployeeByGuid(guid);
   }
 }

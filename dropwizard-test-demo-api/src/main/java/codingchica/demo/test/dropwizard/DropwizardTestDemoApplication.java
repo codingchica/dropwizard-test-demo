@@ -3,6 +3,7 @@ package codingchica.demo.test.dropwizard;
 import codingchica.demo.test.dropwizard.api.commands.GetEmployeeCommand;
 import codingchica.demo.test.dropwizard.api.resources.EmployeeResource;
 import codingchica.demo.test.dropwizard.core.config.DropwizardTestDemoConfiguration;
+import codingchica.demo.test.dropwizard.service.EmployeeService;
 import io.dropwizard.Application;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
@@ -35,11 +36,11 @@ public class DropwizardTestDemoApplication extends Application<DropwizardTestDem
    * Initialize the application with the provided bootstrap configuration. This is where you would
    * add bundles, or commands
    *
+   * @param bootstrap The configuration to use to bootstrap the application during startup.
    * @see <a
    *     href="https://www.dropwizard.io/en/latest/manual/core.html#man-core-bundles">Bundles</a>
    * @see <a
    *     href="https://www.dropwizard.io/en/latest/manual/core.html#man-core-commands">Commands</a>
-   * @param bootstrap The configuration to use to bootstrap the application during startup.
    */
   @Override
   public void initialize(final Bootstrap<DropwizardTestDemoConfiguration> bootstrap) {
@@ -53,13 +54,24 @@ public class DropwizardTestDemoApplication extends Application<DropwizardTestDem
   }
 
   /**
+   * Construct a new EmployeeService object. Exposing this as a separate method, even though the
+   * logic is simple, in case we need to modify the behavior during any testing.
+   *
+   * @return An Employee Service object.
+   */
+  public EmployeeService employeeService() {
+    return new EmployeeService();
+  }
+
+  /**
    * Construct a new EmployeeResource object. Exposing this as a separate method, even though the
    * logic is simple, in case we need to modify the behavior during any testing.
    *
+   * @param employeeService An EmployeeService to use within the EmployeeResource.
    * @return A EmployeeResource object.
    */
-  public EmployeeResource employeeResource() {
-    return new EmployeeResource();
+  public EmployeeResource employeeResource(EmployeeService employeeService) {
+    return new EmployeeResource(employeeService);
   }
 
   /**
@@ -96,6 +108,6 @@ public class DropwizardTestDemoApplication extends Application<DropwizardTestDem
   public void run(
       final DropwizardTestDemoConfiguration configuration, final Environment environment) {
     // Resources that will be used by the application.
-    environment.jersey().register(employeeResource());
+    environment.jersey().register(employeeResource(employeeService()));
   }
 }
