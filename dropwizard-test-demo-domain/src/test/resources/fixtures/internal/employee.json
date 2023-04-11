@@ -1,6 +1,7 @@
 {
   "last": "Doe",
   "nickName": "Johnny",
+  "guid": "abc-123",
   "id": 1,
   "first": "John"
 }

@@ -28,6 +28,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.function.Executable;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.Spy;
@@ -35,11 +36,11 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
 @ExtendWith(DropwizardExtensionsSupport.class)
-class GetPersonCommandTest {
+class GetEmployeeCommandTest {
   @Nested
   class POJOTests {
-    final String name = "getPerson";
-    final String description = "Retrieve an existing person";
+    final String name = "getEmployee";
+    final String description = "Retrieve an existing employee";
 
     @Spy
     private DropwizardTestDemoConfiguration dropwizardTestDemoConfiguration =
@@ -48,8 +49,8 @@ class GetPersonCommandTest {
     private Application<DropwizardTestDemoConfiguration> application;
     @Mock private Subparser subparser;
     @Mock private Argument argument;
-    private GetPersonCommand getPersonCommand =
-        new GetPersonCommand(application, name, description);
+    private GetEmployeeCommand getEmployeeCommand =
+        new GetEmployeeCommand(application, name, description);
     @Mock private Namespace namespace;
     @Mock private Environment environment;
     @Spy private ObjectMapper objectMapper = newObjectMapper();
@@ -59,13 +60,13 @@ class GetPersonCommandTest {
       // Setup
 
       // Execution
-      GetPersonCommand getPersonCommand = new GetPersonCommand(null, null, null);
+      GetEmployeeCommand getEmployeeCommand = new GetEmployeeCommand(null, null, null);
 
       // Validation
-      assertNotNull(getPersonCommand);
-      assertNull(getPersonCommand.getConfiguration());
-      assertNull(getPersonCommand.getDescription());
-      assertNull(getPersonCommand.getName());
+      assertNotNull(getEmployeeCommand);
+      assertNull(getEmployeeCommand.getConfiguration());
+      assertNull(getEmployeeCommand.getDescription());
+      assertNull(getEmployeeCommand.getName());
     }
 
     @Test
@@ -73,13 +74,14 @@ class GetPersonCommandTest {
       // Setup
 
       // Execution
-      GetPersonCommand getPersonCommand = new GetPersonCommand(application, name, description);
+      GetEmployeeCommand getEmployeeCommand =
+          new GetEmployeeCommand(application, name, description);
 
       // Validation
-      assertNotNull(getPersonCommand, "getPersonCommand");
-      assertNull(getPersonCommand.getConfiguration(), "configuration");
-      assertEquals(description, getPersonCommand.getDescription(), "description");
-      assertEquals(name, getPersonCommand.getName(), "name");
+      assertNotNull(getEmployeeCommand, "getEmployeeCommand");
+      assertNull(getEmployeeCommand.getConfiguration(), "configuration");
+      assertEquals(description, getEmployeeCommand.getDescription(), "description");
+      assertEquals(name, getEmployeeCommand.getName(), "name");
     }
 
     @Test
@@ -87,7 +89,7 @@ class GetPersonCommandTest {
       // Setup
 
       // Execution
-      Executable executable = () -> getPersonCommand.configure(null);
+      Executable executable = () -> getEmployeeCommand.configure(null);
 
       // Validation
       NullPointerException nullPointerException =
@@ -100,22 +102,22 @@ class GetPersonCommandTest {
       // Setup
       when(subparser.addArgument(any())).thenReturn(argument);
       when(argument.dest(any())).thenReturn(argument);
-      when(argument.type(int.class)).thenReturn(argument);
+      when(argument.type(String.class)).thenReturn(argument);
       when(argument.required(anyBoolean())).thenReturn(argument);
       when(argument.help(any(String.class))).thenReturn(argument);
       when(argument.nargs("?")).thenReturn(argument);
 
       // Execution
-      getPersonCommand.configure(subparser);
+      getEmployeeCommand.configure(subparser);
 
       // Validation
-      verify(subparser).addArgument("--id");
+      verify(subparser).addArgument("--guid");
       verify(subparser).addArgument("file");
       verify(argument).help("application configuration file");
-      verify(argument).dest("id");
-      verify(argument).type(int.class);
+      verify(argument).dest("guid");
+      verify(argument).type(String.class);
       verify(argument).required(true);
-      verify(argument).help("The unique identifier (ID) of the person to retrieve.");
+      verify(argument).help("The global unique identifier (GUID) of the employee to retrieve.");
       verify(argument).nargs("?");
       verifyNoMoreInteractions(argument);
       verifyNoMoreInteractions(subparser);
@@ -127,7 +129,7 @@ class GetPersonCommandTest {
 
       // Execution
       Executable executable =
-          () -> getPersonCommand.run(null, namespace, dropwizardTestDemoConfiguration);
+          () -> getEmployeeCommand.run(null, namespace, dropwizardTestDemoConfiguration);
 
       // Validation
       NullPointerException nullPointerException =
@@ -141,7 +143,7 @@ class GetPersonCommandTest {
 
       // Execution
       Executable executable =
-          () -> getPersonCommand.run(environment, null, dropwizardTestDemoConfiguration);
+          () -> getEmployeeCommand.run(environment, null, dropwizardTestDemoConfiguration);
 
       // Validation
       NullPointerException nullPointerException =
@@ -154,7 +156,7 @@ class GetPersonCommandTest {
       // Setup
 
       // Execution
-      Executable executable = () -> getPersonCommand.run(environment, namespace, null);
+      Executable executable = () -> getEmployeeCommand.run(environment, namespace, null);
 
       // Validation
       NullPointerException nullPointerException =
@@ -164,29 +166,30 @@ class GetPersonCommandTest {
     }
 
     @ParameterizedTest
-    @ValueSource(ints = {-1, 0})
-    void run_idNotPositive(int value) {
+    @NullAndEmptySource
+    @ValueSource(strings = {" "})
+    void run_idNotPositive(String value) {
       // Setup
-      when(namespace.getInt("id")).thenReturn(value);
+      when(namespace.getString("guid")).thenReturn(value);
 
       // Execution
       Executable executable =
-          () -> getPersonCommand.run(environment, namespace, dropwizardTestDemoConfiguration);
+          () -> getEmployeeCommand.run(environment, namespace, dropwizardTestDemoConfiguration);
 
       // Validation
       IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, executable);
-      assertEquals("id must be positive", exception.getMessage());
+      assertEquals("guid must not be blank", exception.getMessage());
     }
 
     @Test
     void run_mapperNull() {
       // Setup
       when(environment.getObjectMapper()).thenReturn(null);
-      when(namespace.getInt("id")).thenReturn(1);
+      when(namespace.getString("guid")).thenReturn("1");
 
       // Execution
       Executable executable =
-          () -> getPersonCommand.run(environment, namespace, dropwizardTestDemoConfiguration);
+          () -> getEmployeeCommand.run(environment, namespace, dropwizardTestDemoConfiguration);
 
       // Validation
       NullPointerException nullPointerException =
@@ -198,10 +201,10 @@ class GetPersonCommandTest {
     void run_populated() throws Exception {
       // Setup
       when(environment.getObjectMapper()).thenReturn(objectMapper);
-      when(namespace.getInt("id")).thenReturn(1);
+      when(namespace.getString("guid")).thenReturn("1");
 
       // Execution
-      getPersonCommand.run(environment, namespace, dropwizardTestDemoConfiguration);
+      getEmployeeCommand.run(environment, namespace, dropwizardTestDemoConfiguration);
 
       // Validation
       // No exception thrown
@@ -225,7 +228,7 @@ class GetPersonCommandTest {
     @Spy Bootstrap<DropwizardTestDemoConfiguration> bootstrap = new Bootstrap<>(application);
 
     private Cli cli = null;
-    private String cliCommand = "GetPerson";
+    private String cliCommand = "GetEmployee";
     private static final String CONFIG_FILE = "src/test/resources/appConfig/test-component.yml";
 
     @BeforeEach
@@ -235,7 +238,7 @@ class GetPersonCommandTest {
 
       // Add commands you want to test
       bootstrap.addCommand(
-          new GetPersonCommand(application, cliCommand, "Retrieve a particular person"));
+          new GetEmployeeCommand(application, cliCommand, "Retrieve a particular employee"));
 
       // Redirect stdout and stderr to our byte streams
       System.setOut(new PrintStream(stdOut));
@@ -253,13 +256,13 @@ class GetPersonCommandTest {
     }
 
     @Test
-    void retrievesPersonByID() {
+    void retrievesEmployeeByID() {
       // Setup
       String expectedJSON =
-          "{\"id\":1,\"firstName\":\"John\",\"lastName\":\"Doe\",\"nickName\":\"Johnny\"}";
+          "{\"guid\":\"abc42\",\"firstName\":\"John\",\"lastName\":\"Doe\",\"nickName\":\"Johnny\"}";
 
       // Execution
-      final Optional<Throwable> exception = cli.run(cliCommand, "--id", "1", CONFIG_FILE);
+      final Optional<Throwable> exception = cli.run(cliCommand, "--guid", "abc42", CONFIG_FILE);
 
       // Validation
       String stdOutContents = stdOut.toString();

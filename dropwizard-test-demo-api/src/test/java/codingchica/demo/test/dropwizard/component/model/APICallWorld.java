@@ -17,4 +17,5 @@ public class APICallWorld {
   public Map<String, String> requestHeaders = new TreeMap<>();
   public URL url = null;
   public HttpURLConnection connection;
+  public String responseBody = null;
 }

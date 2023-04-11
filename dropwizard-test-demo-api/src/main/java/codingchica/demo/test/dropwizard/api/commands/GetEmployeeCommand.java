@@ -1,8 +1,8 @@
 package codingchica.demo.test.dropwizard.api.commands;
 
 import codingchica.demo.test.dropwizard.core.config.DropwizardTestDemoConfiguration;
-import codingchica.demo.test.dropwizard.core.model.external.Person;
-import codingchica.demo.test.dropwizard.service.PersonService;
+import codingchica.demo.test.dropwizard.core.model.external.Employee;
+import codingchica.demo.test.dropwizard.service.EmployeeService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Preconditions;
 import io.dropwizard.Application;
@@ -10,38 +10,39 @@ import io.dropwizard.cli.EnvironmentCommand;
 import io.dropwizard.setup.Environment;
 import net.sourceforge.argparse4j.inf.Namespace;
 import net.sourceforge.argparse4j.inf.Subparser;
+import org.apache.commons.lang3.StringUtils;
 
-/** CLI command to retrieve a person by ID. */
-public class GetPersonCommand extends EnvironmentCommand<DropwizardTestDemoConfiguration> {
+/** CLI command to retrieve an employee by ID. */
+public class GetEmployeeCommand extends EnvironmentCommand<DropwizardTestDemoConfiguration> {
   /**
-   * The key that will be used to store/retrieve the ID of the person to retrieve when interacting
-   * with the namespace.
+   * The key that will be used to store/retrieve the GUID of the employee to retrieve when
+   * interacting with the namespace.
    */
-  private static final String NAMESPACE_KEY_ID = "id";
+  private static final String NAMESPACE_KEY_GUID = "guid";
 
-  /** The person service that will be providing the business logic for people. */
-  private final PersonService personService = new PersonService();
+  /** The employee service that will be providing the business logic for people. */
+  private final EmployeeService employeeService = new EmployeeService();
 
   /**
-   * Constructor for the Get Person CLI command.
+   * Constructor for the Get Employee CLI command.
    *
    * @param application The dropwizard application which will be running the command.
    * @param name The name of the command on the CLI.
    * @param description A description of the command for the CLI help.
    */
-  public GetPersonCommand(
+  public GetEmployeeCommand(
       Application<DropwizardTestDemoConfiguration> application, String name, String description) {
     super(application, name, description);
   }
 
   /**
-   * Get an existing person by the ID.
+   * Get an existing employee by the ID.
    *
-   * @param id The ID of the person to retrieve.
-   * @return The existing Person object to return on the response.
+   * @param guid The global unique identifier of the employee to retrieve.
+   * @return The existing Employee object to return on the response.
    */
-  private Person getPerson(int id) {
-    return personService.getPersonById(id);
+  private Employee getEmployee(String guid) {
+    return employeeService.getEmployeeByGuid(guid);
   }
 
   /**
@@ -50,7 +51,7 @@ public class GetPersonCommand extends EnvironmentCommand<DropwizardTestDemoConfi
    * @param environment The environment setup within the application running this command.
    * @param namespace The namespace were input
    * @param dropwizardTestDemoConfiguration The application's configuration.
-   * @throws Exception When there is an issue during the person retrieval.
+   * @throws Exception When there is an issue during the employee retrieval.
    */
   @Override
   protected void run(
@@ -59,17 +60,17 @@ public class GetPersonCommand extends EnvironmentCommand<DropwizardTestDemoConfi
       DropwizardTestDemoConfiguration dropwizardTestDemoConfiguration)
       throws Exception {
     Preconditions.checkNotNull(namespace, "namespace must not be null");
-    int id = namespace.getInt(NAMESPACE_KEY_ID);
-
     Preconditions.checkNotNull(environment, "environment must not be null");
     Preconditions.checkNotNull(
         dropwizardTestDemoConfiguration, "dropwizardTestDemoConfiguration must not be null");
-    Preconditions.checkArgument(0 < id, "id must be positive");
 
-    Person person = getPerson(id);
+    String guid = namespace.getString(NAMESPACE_KEY_GUID);
+    Preconditions.checkArgument(!StringUtils.isBlank(guid), "guid must not be blank");
+
+    Employee employee = getEmployee(guid);
     ObjectMapper mapper = environment.getObjectMapper();
     Preconditions.checkNotNull(mapper, "mapper must not be null");
-    System.out.println(mapper.writeValueAsString(person));
+    System.out.println(mapper.writeValueAsString(employee));
   }
 
   /**
@@ -84,10 +85,10 @@ public class GetPersonCommand extends EnvironmentCommand<DropwizardTestDemoConfi
     // Consume a configuration file input, confirm subparser is not null
     super.configure(subparser);
     subparser
-        .addArgument("--id")
-        .dest(NAMESPACE_KEY_ID)
-        .type(int.class)
+        .addArgument("--guid")
+        .dest(NAMESPACE_KEY_GUID)
+        .type(String.class)
         .required(true)
-        .help("The unique identifier (ID) of the person to retrieve.");
+        .help("The global unique identifier (GUID) of the employee to retrieve.");
   }
 }

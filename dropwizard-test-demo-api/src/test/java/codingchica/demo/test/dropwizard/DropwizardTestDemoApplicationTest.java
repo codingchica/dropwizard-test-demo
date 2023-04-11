@@ -4,8 +4,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.*;
 
-import codingchica.demo.test.dropwizard.api.commands.GetPersonCommand;
-import codingchica.demo.test.dropwizard.api.resources.PersonResource;
+import codingchica.demo.test.dropwizard.api.commands.GetEmployeeCommand;
+import codingchica.demo.test.dropwizard.api.resources.EmployeeResource;
 import codingchica.demo.test.dropwizard.core.config.DropwizardTestDemoConfiguration;
 import io.dropwizard.jersey.setup.JerseyEnvironment;
 import io.dropwizard.setup.Bootstrap;
@@ -53,7 +53,7 @@ class DropwizardTestDemoApplicationTest {
       verify(environment).jersey();
       verifyNoMoreInteractions(environment);
 
-      verify(jerseyEnvironment).register(any(PersonResource.class));
+      verify(jerseyEnvironment).register(any(EmployeeResource.class));
       verifyNoMoreInteractions(jerseyEnvironment);
     }
   }
@@ -64,17 +64,18 @@ class DropwizardTestDemoApplicationTest {
     @Test
     void whenInitializeInvoked_thenSuccess() {
       // Setup
-      ArgumentCaptor<GetPersonCommand> addCommandCaptor =
-          ArgumentCaptor.forClass(GetPersonCommand.class);
+      ArgumentCaptor<GetEmployeeCommand> addCommandCaptor =
+          ArgumentCaptor.forClass(GetEmployeeCommand.class);
 
       // Execution
       dropwizardTestDemoApplication.initialize(bootstrap);
 
       // Validation
       verify(bootstrap).addCommand(addCommandCaptor.capture());
-      GetPersonCommand getPersonCommand = addCommandCaptor.getValue();
-      assertEquals("GetPerson", getPersonCommand.getName(), "name");
-      assertEquals("Retrieve a person by ID.", getPersonCommand.getDescription(), "description");
+      GetEmployeeCommand getEmployeeCommand = addCommandCaptor.getValue();
+      assertEquals("GetEmployee", getEmployeeCommand.getName(), "name");
+      assertEquals(
+          "Retrieve an employee by ID.", getEmployeeCommand.getDescription(), "description");
       verifyNoMoreInteractions(bootstrap);
     }
   }
@@ -101,10 +102,10 @@ class DropwizardTestDemoApplicationTest {
     private final String usageInfo =
         StringUtils.normalizeSpace(
             """
-usage: java -jar project.jar [-h] [-v] {server,check,GetPerson} ...
+usage: java -jar project.jar [-h] [-v] {server,check,GetEmployee} ...
 
 positional arguments:
-  {server,check,GetPerson}         available commands
+  {server,check,GetEmployee}         available commands
 
 named arguments:
   -h, --help             show this help message and exit

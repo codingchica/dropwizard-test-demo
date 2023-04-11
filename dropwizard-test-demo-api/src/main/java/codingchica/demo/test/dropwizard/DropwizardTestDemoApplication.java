@@ -1,7 +1,7 @@
 package codingchica.demo.test.dropwizard;
 
-import codingchica.demo.test.dropwizard.api.commands.GetPersonCommand;
-import codingchica.demo.test.dropwizard.api.resources.PersonResource;
+import codingchica.demo.test.dropwizard.api.commands.GetEmployeeCommand;
+import codingchica.demo.test.dropwizard.api.resources.EmployeeResource;
 import codingchica.demo.test.dropwizard.core.config.DropwizardTestDemoConfiguration;
 import io.dropwizard.Application;
 import io.dropwizard.setup.Bootstrap;
@@ -49,27 +49,27 @@ public class DropwizardTestDemoApplication extends Application<DropwizardTestDem
     //            bootstrap.getConfigurationSourceProvider(), new
     // EnvironmentVariableSubstitutor()));
 
-    bootstrap.addCommand(getPersonCommand());
+    bootstrap.addCommand(getEmployeeCommand());
   }
 
   /**
-   * Construct a new PersonResource object. Exposing this as a separate method, even though the
+   * Construct a new EmployeeResource object. Exposing this as a separate method, even though the
    * logic is simple, in case we need to modify the behavior during any testing.
    *
-   * @return A PersonResource object.
+   * @return A EmployeeResource object.
    */
-  public PersonResource personResource() {
-    return new PersonResource();
+  public EmployeeResource employeeResource() {
+    return new EmployeeResource();
   }
 
   /**
-   * Construct a new GetPersonCommand object. Exposing this as a separate method, even though the
+   * Construct a new GetEmployeeCommand object. Exposing this as a separate method, even though the
    * logic is simple, in case we need to modify the behavior during any testing.
    *
-   * @return A GetPersonCommand object.
+   * @return A GetEmployeeCommand object.
    */
-  public GetPersonCommand getPersonCommand() {
-    return new GetPersonCommand(this, "GetPerson", "Retrieve a person by ID.");
+  public GetEmployeeCommand getEmployeeCommand() {
+    return new GetEmployeeCommand(this, "GetEmployee", "Retrieve an employee by ID.");
   }
 
   /**
@@ -96,6 +96,6 @@ public class DropwizardTestDemoApplication extends Application<DropwizardTestDem
   public void run(
       final DropwizardTestDemoConfiguration configuration, final Environment environment) {
     // Resources that will be used by the application.
-    environment.jersey().register(personResource());
+    environment.jersey().register(employeeResource());
   }
 }

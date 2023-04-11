@@ -2,5 +2,5 @@
   "firstName": "John",
   "lastName": "Doe",
   "nickName": "Johnny",
-  "id": 1
+  "guid": "abc-123"
 }

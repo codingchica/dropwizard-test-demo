@@ -28,33 +28,44 @@ public class GenericCLISteps {
    */
   private final File workingDirectory = new File(System.getProperty("user.dir"));
 
+  public static final String PROJECT_VERSION_KEY = "project.version";
+  public static final String PROJECT_VERSION_DEFAULT = "0.1-SNAPSHOT";
+
+  public static final String PROJECT_ARTIFACT_ID_KEY = "project.artifactId";
+  public static final String PROJECT_ARTIFACT_ID_DEFAULT = "dropwizard-test-demo-api";
+
+  private String replaceKeyword(String stringToReplaceKeyword, String propertyName, String value) {
+    String keyword = String.format("${%s}", propertyName);
+    String returnValue = stringToReplaceKeyword;
+    if (StringUtils.contains(returnValue, keyword)) {
+      System.out.printf("Replacing %s with %s in %s%n", keyword, value, returnValue);
+      returnValue = StringUtils.replace(returnValue, keyword, value);
+    }
+    return returnValue;
+  }
+
   private String replaceSystemProperties(String stringValue) {
+    // Replace keywords in system properties
     String returnValue = StringUtils.trimToEmpty(stringValue);
     if (returnValue != null && StringUtils.contains(returnValue, "${")) {
       for (Map.Entry<Object, Object> entry : System.getProperties().entrySet()) {
         if (entry.getKey() instanceof String prop && entry.getValue() instanceof String value) {
-          String keyword = String.format("${%s}", prop);
-          if (StringUtils.contains(returnValue, keyword)) {
-            System.out.printf("Replacing %s with %s in %s%n", keyword, value, returnValue);
-            returnValue = StringUtils.replace(returnValue, keyword, value);
-          }
-        } else {
-          returnValue = stringValue;
+          returnValue = replaceKeyword(returnValue, prop, value);
         }
       }
     }
 
+    // Replace keywords in environment variables
     if (returnValue != null && StringUtils.contains(returnValue, "${")) {
       for (Map.Entry<String, String> entry : System.getenv().entrySet()) {
-        String prop = entry.getKey();
-        String value = entry.getValue();
-        String keyword = String.format("${%s}", prop);
-        if (StringUtils.contains(stringValue, keyword)) {
-          System.out.printf("Replacing %s with %s in %s%n", keyword, value, returnValue);
-          returnValue = StringUtils.replace(returnValue, keyword, value);
-        }
+        returnValue = replaceKeyword(returnValue, entry.getKey(), entry.getValue());
       }
     }
+
+    // Lastly, look at defaults, if they still remain
+    returnValue = replaceKeyword(returnValue, PROJECT_ARTIFACT_ID_KEY, PROJECT_ARTIFACT_ID_DEFAULT);
+    returnValue = replaceKeyword(returnValue, PROJECT_VERSION_KEY, PROJECT_VERSION_DEFAULT);
+
     assertFalse(
         StringUtils.contains(returnValue, "${"),
         String.format(

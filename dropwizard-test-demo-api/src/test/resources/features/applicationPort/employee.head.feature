@@ -1,6 +1,6 @@
 # See Gherkin syntax reference: https://cucumber.io/docs/gherkin/reference/
-@person
-Feature: Person API - Head - Success
+@employee
+Feature: Employee API - Head - Success
 
   Background:
     Given that my request uses the http protocol
@@ -11,7 +11,7 @@ Feature: Person API - Head - Success
     @Component
     Scenario Outline: Success.
       Given that my request uses the <HTTPMethod> method
-      And that my request goes to endpoint people/1
+      And that my request goes to endpoint employees/1
       When I submit the request
       Then the response code is 200
       And the response body is completely empty

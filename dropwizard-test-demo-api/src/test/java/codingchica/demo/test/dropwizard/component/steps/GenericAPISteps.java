@@ -119,6 +119,15 @@ public class GenericAPISteps {
     world.connection.connect();
   }
 
+  private String getResponseEntity() throws IOException {
+    if (world.responseBody == null) {
+      if (getResponseBody() == null) {
+        getResponseError();
+      }
+    }
+    return world.responseBody;
+  }
+
   private String getResponseBody() throws IOException {
     String responseReceived = null;
     InputStream responseBodyStream = null;
@@ -138,6 +147,7 @@ public class GenericAPISteps {
         responseReceived = response.toString();
       }
     }
+    world.responseBody = responseReceived;
     return responseReceived;
   }
 
@@ -155,42 +165,38 @@ public class GenericAPISteps {
         responseReceived = response.toString();
       }
     }
+    world.responseBody = responseReceived;
     return responseReceived;
   }
 
   @Then("the response code is {int}")
   public void theResponseCodeMatches(int expectedResponseCode) throws IOException {
     // Validation
-    // String body = getResponseBody();
+    String actualResponseBody = getResponseEntity();
     assertEquals(
         expectedResponseCode,
         world.connection.getResponseCode(),
-        "http status code mismatch calling "
-            + world.endpoint
-            + ": "
-            + world.connection.getResponseMessage());
+        "http status code mismatch calling " + world.endpoint + ": " + actualResponseBody);
   }
 
   @Then("the response body is {word}")
   public void theResponseBodyEquals(String responseBody) throws IOException {
-    String actualResponseBody = getResponseBody();
-    String responseError = getResponseError();
+    String actualResponseBody = getResponseEntity();
     assertNotNull(
         actualResponseBody,
         "Expected response body to not be null, but it was.  Here is the error body: "
-            + responseError);
+            + actualResponseBody);
     assertEquals(responseBody, actualResponseBody, "mismatch mismatch calling " + world.endpoint);
   }
 
   @Then("the response body contains JSON data")
   public void theResponseBodyMatchesPattern(Map<String, String> expectedResponseData)
       throws IOException {
-    String responseBody = getResponseBody();
-    String responseError = getResponseError();
+    String responseBody = getResponseEntity();
     assertNotNull(
         responseBody,
         "Expected response body to not be null, but it was.  Here is the error body: "
-            + responseError);
+            + responseBody);
     DocumentContext jsonBody = JsonPath.parse(responseBody);
     assertNotNull(expectedResponseData, "expectedResponseData");
     assertNotNull(responseBody, "responseBody");
@@ -211,24 +217,23 @@ public class GenericAPISteps {
   @Then("the error response body contains JSON data")
   public void theResponseErrorMatchesPattern(Map<String, String> expectedResponseData)
       throws IOException {
-    String responseBody = getResponseBody();
-    String responseError = getResponseError();
+    String responseBody = getResponseEntity();
     assertNotNull(
-        responseError,
+        responseBody,
         "Expected response error to not be null, but it was.  Here is the regular body: "
             + responseBody);
-    DocumentContext jsonBody = JsonPath.parse(responseError);
+    DocumentContext jsonBody = JsonPath.parse(responseBody);
     assertNotNull(expectedResponseData, "expectedResponseData");
-    assertNotNull(responseError, "responseError");
+    assertNotNull(responseBody, "responseError");
     expectedResponseData.forEach(
         (path, value) -> {
           try {
             assertEquals(
                 value,
                 jsonBody.read(path).toString(),
-                "Mismatch on '" + path + "' in response = " + responseError);
+                "Mismatch on '" + path + "' in response = " + responseBody);
           } catch (Throwable t) {
-            System.out.println("Response: " + responseError);
+            System.out.println("Response: " + responseBody);
             throw t;
           }
         });
@@ -237,29 +242,19 @@ public class GenericAPISteps {
   @Then("the response body contains String data")
   public void theResponseBodyMatchesPattern(List<String> expectedResponseSnippets)
       throws IOException {
-    String responseBody = getResponseBody();
-    String responseError = getResponseError();
-    assertNotNull(
-        responseBody,
-        "Expected response body to not be null, but it was.  Here is the error body: "
-            + responseError);
+    String responseBody = getResponseEntity();
     assertNotNull(expectedResponseSnippets, "expectedResponseSnippets");
     assertNotNull(responseBody, "responseBody");
     expectedResponseSnippets.forEach(
         (value) -> {
           assertTrue(
               StringUtils.contains(responseBody, value),
-              "No hit for '"
-                  + value
-                  + "' in response:\n"
-                  + responseBody
-                  + "\nSee also errorResponse:\n"
-                  + responseError);
+              "No hit for '" + value + "' in response:\n" + responseBody);
         });
   }
 
   @Then("the response body is completely empty")
   public void theResponseBodyIsNotSet() throws IOException {
-    assertEquals("", getResponseBody(), "mismatch mismatch calling " + world.endpoint);
+    assertEquals("", getResponseEntity(), "mismatch mismatch calling " + world.endpoint);
   }
 }

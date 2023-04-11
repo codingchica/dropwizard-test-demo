@@ -19,10 +19,10 @@ Feature: CLI Help
     And CLI standard error is empty
     And CLI standard output matches the lines
       | usage: java -jar ${project.artifactId}-${project.version}.jar |
-      | [-h] [-v] {server,check,GetPerson} ...                        |
+      | [-h] [-v] {server,check,GetEmployee} ...                      |
       |                                                               |
       | positional arguments:                                         |
-      | {server,check,GetPerson}                                      |
+      | {server,check,GetEmployee}                                    |
       | available commands                                            |
       |                                                               |
       | named arguments:                                              |
