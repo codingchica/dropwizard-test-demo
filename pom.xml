@@ -19,7 +19,7 @@
         <dropwizard.client.version>2.1.5</dropwizard.client.version>
         <dropwizard.version>2.1.4</dropwizard.version>
         <dropwizard.testing.version>2.1.5</dropwizard.testing.version>
-        <google.guava.version>31.1-jre</google.guava.version>
+        <google.guava.version>32.0.0-jre</google.guava.version>
         <jacoco.maven.plugin.version>0.8.8</jacoco.maven.plugin.version>
         <java.version>17</java.version>
         <json.path.version>2.4.0</json.path.version>
