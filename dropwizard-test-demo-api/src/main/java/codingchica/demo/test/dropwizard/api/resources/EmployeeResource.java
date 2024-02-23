@@ -4,13 +4,13 @@ import codingchica.demo.test.dropwizard.core.model.external.Employee;
 import codingchica.demo.test.dropwizard.service.EmployeeService;
 import com.codahale.metrics.annotation.Timed;
 import com.google.common.base.Preconditions;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.Pattern;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.MediaType;
 import org.hibernate.validator.constraints.Length;
 
 /** The Web service entry point into the application for CRUD operations involving people. */

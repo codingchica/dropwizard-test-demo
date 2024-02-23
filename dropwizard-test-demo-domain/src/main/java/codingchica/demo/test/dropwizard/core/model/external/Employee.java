@@ -1,6 +1,6 @@
 package codingchica.demo.test.dropwizard.core.model.external;
 
-import javax.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 import org.hibernate.validator.constraints.Length;
 

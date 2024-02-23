@@ -7,11 +7,11 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import codingchica.demo.test.dropwizard.core.config.DropwizardTestDemoConfiguration;
 import io.dropwizard.validation.BaseValidator;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validator;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Set;
-import javax.validation.ConstraintViolation;
-import javax.validation.Validator;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 

@@ -2,11 +2,11 @@ package codingchica.demo.test.dropwizard.util;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import jakarta.validation.ConstraintViolation;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
-import javax.validation.ConstraintViolation;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 

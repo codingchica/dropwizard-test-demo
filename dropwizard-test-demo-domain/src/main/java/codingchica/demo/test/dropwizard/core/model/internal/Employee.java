@@ -1,6 +1,6 @@
 package codingchica.demo.test.dropwizard.core.model.internal;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 /** An internal representation of an employee. */

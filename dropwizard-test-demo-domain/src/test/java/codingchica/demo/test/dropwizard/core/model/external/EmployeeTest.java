@@ -10,13 +10,13 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.dropwizard.jersey.validation.Validators;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validator;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Set;
-import javax.validation.ConstraintViolation;
-import javax.validation.Validator;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;

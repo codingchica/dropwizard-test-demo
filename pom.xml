@@ -16,9 +16,9 @@
         <apache.commons.collections.version>4.4</apache.commons.collections.version>
         <cucumber.expressions.version>16.1.2</cucumber.expressions.version>
         <cucumber.version>7.11.1</cucumber.version>
-        <dropwizard.client.version>3.0.6</dropwizard.client.version>
-        <dropwizard.version>3.0.6</dropwizard.version>
-        <dropwizard.testing.version>3.0.6</dropwizard.testing.version>
+        <dropwizard.client.version>4</dropwizard.client.version>
+        <dropwizard.version>4.0.6</dropwizard.version>
+        <dropwizard.testing.version>4.0.6</dropwizard.testing.version>
         <google.guava.version>32.0.0-jre</google.guava.version>
         <jacoco.maven.plugin.version>0.8.8</jacoco.maven.plugin.version>
         <java.version>17</java.version>
