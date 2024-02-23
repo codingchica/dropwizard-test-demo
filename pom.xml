@@ -19,10 +19,10 @@
         <dropwizard.client.version>3.0.6</dropwizard.client.version>
         <dropwizard.version>3.0.6</dropwizard.version>
         <dropwizard.testing.version>3.0.6</dropwizard.testing.version>
-        <google.guava.version>31.1-jre</google.guava.version>
+        <google.guava.version>32.0.0-jre</google.guava.version>
         <jacoco.maven.plugin.version>0.8.8</jacoco.maven.plugin.version>
         <java.version>17</java.version>
-        <json.path.version>2.4.0</json.path.version>
+        <json.path.version>2.9.0</json.path.version>
         <junit.jupiter.version>5.9.1</junit.jupiter.version>
         <junit.platform.version>1.9.1</junit.platform.version>
         <lombok.version>1.18.26</lombok.version>
