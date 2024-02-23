@@ -4,9 +4,9 @@ import codingchica.demo.test.dropwizard.api.commands.GetEmployeeCommand;
 import codingchica.demo.test.dropwizard.api.resources.EmployeeResource;
 import codingchica.demo.test.dropwizard.core.config.DropwizardTestDemoConfiguration;
 import codingchica.demo.test.dropwizard.service.EmployeeService;
-import io.dropwizard.Application;
-import io.dropwizard.setup.Bootstrap;
-import io.dropwizard.setup.Environment;
+import io.dropwizard.core.Application;
+import io.dropwizard.core.setup.Bootstrap;
+import io.dropwizard.core.setup.Environment;
 import org.apache.commons.lang3.ArrayUtils;
 
 /** The main DropWizard application / controller. */

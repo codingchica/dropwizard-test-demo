@@ -1,6 +1,6 @@
 package codingchica.demo.test.dropwizard.core.config;
 
-import io.dropwizard.Configuration;
+import io.dropwizard.core.Configuration;
 import lombok.*;
 
 /**

@@ -18,7 +18,7 @@ Feature: CLI Check Configuration File
     When I run the CLI command until it stops
     Then the cli exit code is 0
     And CLI standard error is empty
-    And CLI standard output contains the partial line 'io.dropwizard.cli.CheckCommand: Configuration is OK'
+    And CLI standard output contains the partial line 'io.dropwizard.core.cli.CheckCommand: Configuration is OK'
     Examples:
       | Configuration File                              |
       | src/test/resources/appConfig/test-component.yml |

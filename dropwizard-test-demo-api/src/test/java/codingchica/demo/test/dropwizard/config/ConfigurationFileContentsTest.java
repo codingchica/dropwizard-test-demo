@@ -1,5 +1,7 @@
 package codingchica.demo.test.dropwizard.config;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import ch.qos.logback.access.spi.IAccessEvent;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import codingchica.demo.test.dropwizard.core.config.DropwizardTestDemoConfiguration;
@@ -7,6 +9,10 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import io.dropwizard.configuration.*;
+import io.dropwizard.core.server.DefaultServerFactory;
+import io.dropwizard.core.server.ServerFactory;
+import io.dropwizard.core.setup.AdminFactory;
+import io.dropwizard.core.setup.HealthCheckConfiguration;
 import io.dropwizard.health.HealthFactory;
 import io.dropwizard.jackson.Jackson;
 import io.dropwizard.jersey.validation.Validators;
@@ -14,21 +20,21 @@ import io.dropwizard.jetty.ConnectorFactory;
 import io.dropwizard.jetty.GzipHandlerFactory;
 import io.dropwizard.jetty.HttpConnectorFactory;
 import io.dropwizard.jetty.ServerPushFilterFactory;
-import io.dropwizard.logging.AppenderFactory;
-import io.dropwizard.logging.ConsoleAppenderFactory;
-import io.dropwizard.logging.DefaultLoggingFactory;
-import io.dropwizard.logging.LoggingFactory;
-import io.dropwizard.metrics.MetricsFactory;
-import io.dropwizard.metrics.ReporterFactory;
+import io.dropwizard.logging.common.AppenderFactory;
+import io.dropwizard.logging.common.ConsoleAppenderFactory;
+import io.dropwizard.logging.common.DefaultLoggingFactory;
+import io.dropwizard.logging.common.LoggingFactory;
+import io.dropwizard.metrics.common.MetricsFactory;
+import io.dropwizard.metrics.common.ReporterFactory;
 import io.dropwizard.request.logging.LogbackAccessRequestLogFactory;
 import io.dropwizard.request.logging.RequestLogFactory;
-import io.dropwizard.server.DefaultServerFactory;
-import io.dropwizard.server.ServerFactory;
 import io.dropwizard.servlets.tasks.TaskConfiguration;
-import io.dropwizard.setup.AdminFactory;
-import io.dropwizard.setup.HealthCheckConfiguration;
 import io.dropwizard.util.DataSize;
 import io.dropwizard.util.Duration;
+import java.io.File;
+import java.io.IOException;
+import java.util.*;
+import javax.validation.Validator;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jetty.http.CookieCompliance;
 import org.eclipse.jetty.http.HttpCompliance;
@@ -36,13 +42,6 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Spy;
-
-import javax.validation.Validator;
-import java.io.File;
-import java.io.IOException;
-import java.util.*;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Tests to enforce that all application configuration files contain the expected contents, once
@@ -149,8 +148,8 @@ public class ConfigurationFileContentsTest {
    * @param configFilePath The path to the configuration file under test.
    * @throws ConfigurationException If the configuration is not valid.
    * @throws IOException If there are issues retrieving the configuration file.
-   * @see <a href="https://www.dropwizard.io/en/latest/manual/configuration.html">Dropwizard
-   *     Config Reference</a>
+   * @see <a href="https://www.dropwizard.io/en/latest/manual/configuration.html">Dropwizard Config
+   *     Reference</a>
    */
   @ParameterizedTest(name = "{0}")
   @MethodSource("provideConfigFiles")
@@ -773,11 +772,6 @@ public class ConfigurationFileContentsTest {
                 gzipFilterFactory.getBufferSize(),
                 "gzipFilterFactory.bufferSize"),
         () ->
-            assertEquals(
-                new TreeSet<>(),
-                gzipFilterFactory.getExcludedUserAgentPatterns(),
-                "gzipFilterFactory.excludedUserAgentPatterns"),
-        () ->
             assertNull(
                 gzipFilterFactory.getCompressedMimeTypes(),
                 "gzipFilterFactory.compressedMimeTypes"),
@@ -793,10 +787,6 @@ public class ConfigurationFileContentsTest {
                 -1,
                 gzipFilterFactory.getDeflateCompressionLevel(),
                 "gzipFilterFactory.deflateCompressionLevel"),
-        () ->
-            assertTrue(
-                gzipFilterFactory.isGzipCompatibleInflation(),
-                "gzipFilterFactory.gzipCompatibleInflation"),
         () -> assertFalse(gzipFilterFactory.isSyncFlush(), "gzipFilterFactory.syncFlush"));
   }
 }

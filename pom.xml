@@ -16,9 +16,9 @@
         <apache.commons.collections.version>4.4</apache.commons.collections.version>
         <cucumber.expressions.version>16.1.2</cucumber.expressions.version>
         <cucumber.version>7.11.1</cucumber.version>
-        <dropwizard.client.version>2.1.5</dropwizard.client.version>
-        <dropwizard.version>2.1.4</dropwizard.version>
-        <dropwizard.testing.version>2.1.5</dropwizard.testing.version>
+        <dropwizard.client.version>3.0.6</dropwizard.client.version>
+        <dropwizard.version>3.0.6</dropwizard.version>
+        <dropwizard.testing.version>3.0.6</dropwizard.testing.version>
         <google.guava.version>31.1-jre</google.guava.version>
         <jacoco.maven.plugin.version>0.8.8</jacoco.maven.plugin.version>
         <java.version>17</java.version>
@@ -477,6 +477,30 @@
                     <version>${jacoco.maven.plugin.version}</version>
                     <inherited>true</inherited>
                 </plugin>
+                <plugin>
+                    <groupId>com.github.spotbugs</groupId>
+                    <artifactId>spotbugs-maven-plugin</artifactId>
+                    <configuration>
+                        <includeFilterFile>build_config/spotbugs-security-include.xml</includeFilterFile>
+                        <excludeFilterFile>build_config/spotbugs-security-exclude.xml</excludeFilterFile>
+                        <effort>max</effort>
+                        <plugins>
+                            <plugin>
+                                <groupId>com.h3xstream.findsecbugs</groupId>
+                                <artifactId>findsecbugs-plugin</artifactId>
+                                <version>1.12.0</version>
+                            </plugin>
+                        </plugins>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <id>static-code-analysis</id>
+                            <goals>
+                                <goal>check</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
             </plugins>
         </pluginManagement>
     </build>
@@ -488,4 +512,18 @@
         <!--        <module>dropwizard-test-demo-persistence</module>-->
         <module>dropwizard-test-demo-service-layer</module>
     </modules>
+    <reporting>
+        <plugins>
+
+            <plugin>
+                <groupId>com.github.spotbugs</groupId>
+                <artifactId>spotbugs-maven-plugin</artifactId>
+                <configuration>
+                    <includeFilterFile>build_config/spotbugs-security-include.xml</includeFilterFile>
+                    <excludeFilterFile>build_config/spotbugs-security-exclude.xml</excludeFilterFile>
+                    <effort>max</effort>
+                </configuration>
+            </plugin>
+        </plugins>
+    </reporting>
 </project>
