@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import ch.qos.logback.access.spi.IAccessEvent;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import codingchica.demo.test.dropwizard.core.config.DropwizardTestDemoConfiguration;
+import com.codahale.metrics.annotation.ResponseMeteredLevel;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -13,7 +14,6 @@ import io.dropwizard.core.server.DefaultServerFactory;
 import io.dropwizard.core.server.ServerFactory;
 import io.dropwizard.core.setup.AdminFactory;
 import io.dropwizard.core.setup.HealthCheckConfiguration;
-import io.dropwizard.health.HealthFactory;
 import io.dropwizard.jackson.Jackson;
 import io.dropwizard.jersey.validation.Validators;
 import io.dropwizard.jetty.ConnectorFactory;
@@ -35,9 +35,12 @@ import jakarta.validation.Validator;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
+import lombok.NonNull;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jetty.http.CookieCompliance;
 import org.eclipse.jetty.http.HttpCompliance;
+import org.eclipse.jetty.http.UriCompliance;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -68,9 +71,16 @@ public class ConfigurationFileContentsTest {
       new ResourceConfigurationSourceProvider();
 
   private static List<String> configFiles = null;
+  /**
+   * A collection to allow tests that should include validation every field to enforce that new
+   * fields are also added.
+   */
+  private final Set<String> testedFields = new TreeSet<>();
+
+  private final Set<String> expectedFieldNames = new TreeSet<>();
 
   /**
-   * These are setup in the Maven pom.xml. If you are running the test locally in an IDE, you must
+   * These are set up in the Maven pom.xml. If you are running the test locally in an IDE, you must
    * also set these values in your run configuration.
    */
   @BeforeAll
@@ -88,12 +98,16 @@ public class ConfigurationFileContentsTest {
     objectMapper.configure(SerializationFeature.INDENT_OUTPUT, true);
   }
 
+  /**
+   * Retrieve all YAML files from the configuration directory: src/main/resources/appConfig.
+   *
+   * @return The file paths to available configuration files.
+   */
   public static List<String> provideConfigFiles() {
     if (configFiles == null) {
       File configFolder = new File("src/main/resources/appConfig");
       assertTrue(configFolder.exists(), configFolder.getPath() + " does not exist");
       assertTrue(configFolder.isDirectory(), configFolder.getPath() + " is not a directory");
-      System.out.println("Made it to here");
       configFiles =
           Arrays.stream(
                   Objects.requireNonNull(
@@ -111,280 +125,193 @@ public class ConfigurationFileContentsTest {
     return configFiles;
   }
 
-  /**
-   * Ensure that the <em>metrics</em> section of the configuration is setup as expected.
-   *
-   * @param configFilePath The path to the configuration file under test.
-   * @throws ConfigurationException If the configuration is not valid.
-   * @throws IOException If there are issues retrieving the configuration file.
-   * @see <a href="https://www.dropwizard.io/en/latest/manual/configuration.html#metrics">Dropwizard
-   *     Config Reference: Metrics</a>
-   */
   @ParameterizedTest(name = "{0}")
   @MethodSource("provideConfigFiles")
-  public void testContents_metrics(String configFilePath)
+  public void testFileContents(@NonNull String configFilePath)
       throws ConfigurationException, IOException {
     // Setup
+    String prefix = "appConfig";
+    expectClassFieldsTested(prefix, DropwizardTestDemoConfiguration.class);
     SubstitutingSourceProvider substitutingSourceProvider =
         new SubstitutingSourceProvider(
             resourceConfigurationSourceProvider, environmentVariableSubstitutor);
+
+    // Execution
     DropwizardTestDemoConfiguration configPOJO =
         factory.build(substitutingSourceProvider, configFilePath);
 
-    // Execution
-    MetricsFactory metrics = configPOJO.getMetricsFactory();
-
     // Validation
-    assertNotNull(metrics, "metrics");
+    // Check immediate filed status
     assertAll(
-        () -> assertEquals(Duration.minutes(1), metrics.getFrequency(), "frequency"),
-        () -> assertEquals(new ArrayList<ReporterFactory>(), metrics.getReporters(), "reporters"),
-        () -> assertFalse(metrics.isReportOnStop(), "reportOnStop"));
+        () -> assertNotNullAndLog(configPOJO.getAdminFactory(), prefix + ".adminFactory"),
+        () -> assertTrueAndLog(configPOJO.getHealthFactory().isEmpty(), prefix + ".healthFactory"),
+        () -> assertNotNullAndLog(configPOJO.getLoggingFactory(), prefix + ".loggingFactory"),
+        () -> assertNotNullAndLog(configPOJO.getMetricsFactory(), prefix + ".metricsFactory"),
+        () -> assertNotNullAndLog(configPOJO.getServerFactory(), prefix + ".serverFactory"),
+        () -> assertNullAndLog(configPOJO.getTestValue(), prefix + ".testValue"));
+    assertAllFieldsUsedAndClear();
+
+    // Drill into nested objects for validations.
+    testContents(configPOJO.getAdminFactory());
+    testContents(configPOJO.getLoggingFactory());
+    testContents(configPOJO.getMetricsFactory());
+    testContents(configPOJO.getServerFactory());
   }
 
-  /**
-   * Ensure that the <em>metrics</em> section of the configuration is setup as expected.
-   *
-   * @param configFilePath The path to the configuration file under test.
-   * @throws ConfigurationException If the configuration is not valid.
-   * @throws IOException If there are issues retrieving the configuration file.
-   * @see <a href="https://www.dropwizard.io/en/latest/manual/configuration.html">Dropwizard Config
-   *     Reference</a>
-   */
-  @ParameterizedTest(name = "{0}")
-  @MethodSource("provideConfigFiles")
-  public void testContents_admin(String configFilePath) throws ConfigurationException, IOException {
+  public void testContents(@NonNull MetricsFactory metrics) {
     // Setup
-    SubstitutingSourceProvider substitutingSourceProvider =
-        new SubstitutingSourceProvider(
-            resourceConfigurationSourceProvider, environmentVariableSubstitutor);
-    DropwizardTestDemoConfiguration configPOJO =
-        factory.build(substitutingSourceProvider, configFilePath);
-
-    // Execution
-    AdminFactory admin = configPOJO.getAdminFactory();
+    String prefix = "metrics";
+    expectClassFieldsTested(prefix, MetricsFactory.class);
 
     // Validation
-    System.out.println(objectMapper.writeValueAsString(admin));
-    assertNotNull(admin, "admin");
-
-    validateContents_admin_healthChecks(admin.getHealthChecks());
-    validateContents_admin_tasks(admin.getTasks());
-  }
-
-  /**
-   * Ensure that the <em>healthchecks</em> section of the configuration is setup as expected.
-   *
-   * @param healthChecks The object to validate.
-   * @see <a
-   *     href="https://www.dropwizard.io/en/latest/manual/configuration.html#health-checks">Dropwizard
-   *     Config Reference: Health checks</a>
-   */
-  private void validateContents_admin_healthChecks(HealthCheckConfiguration healthChecks) {
-    assertNotNull(healthChecks, "healthChecks");
+    // Immediate fields
     assertAll(
-        () -> assertEquals(1, healthChecks.getMinThreads(), "healthChecks.minThreads"),
-        () -> assertEquals(4, healthChecks.getMaxThreads(), "healthChecks.maxThreads"),
-        () -> assertEquals(1, healthChecks.getWorkQueueSize(), "healthChecks.workQueueSize"));
+        () ->
+            assertEqualsAndLog(Duration.minutes(1), metrics.getFrequency(), prefix + ".frequency"),
+        () ->
+            assertEqualsAndLog(
+                new ArrayList<ReporterFactory>(), metrics.getReporters(), prefix + ".reporters"),
+        () -> assertFalseAndLog(metrics.isReportOnStop(), prefix + ".reportOnStop"));
+    assertAllFieldsUsedAndClear();
+    // No nested objects
   }
 
-  /**
-   * Ensure that the <em>tasks</em> section of the configuration is setup as expected.
-   *
-   * @param tasks The object to validate.
-   * @see <a href="https://www.dropwizard.io/en/latest/manual/configuration.html#tasks">Dropwizard
-   *     Config Reference: Tasks</a>
-   */
-  private void validateContents_admin_tasks(TaskConfiguration tasks) {
-    assertNotNull(tasks, "tasks");
-    assertFalse(tasks.isPrintStackTraceOnError(), "tasks.printStackTraceOnError");
-  }
-
-  /**
-   * Ensure that the <em>health</em> section of the configuration is setup as expected.
-   *
-   * @param configFilePath The path to the configuration file under test.
-   * @throws ConfigurationException If the configuration is not valid.
-   * @throws IOException If there are issues retrieving the configuration file.
-   * @see <a href="https://www.dropwizard.io/en/latest/manual/configuration.html#health">Dropwizard
-   *     Config Reference: Health</a>
-   */
-  @ParameterizedTest(name = "{0}")
-  @MethodSource("provideConfigFiles")
-  public void testContents_health(String configFilePath)
-      throws ConfigurationException, IOException {
+  public void testContents(@NonNull AdminFactory adminFactory) {
     // Setup
-    SubstitutingSourceProvider substitutingSourceProvider =
-        new SubstitutingSourceProvider(
-            resourceConfigurationSourceProvider, environmentVariableSubstitutor);
-    DropwizardTestDemoConfiguration configPOJO =
-        factory.build(substitutingSourceProvider, configFilePath);
-
-    // Execution
-    Optional<HealthFactory> health = configPOJO.getHealthFactory();
+    String prefix = "adminFactory";
+    expectClassFieldsTested(prefix, AdminFactory.class);
 
     // Validation
-    System.out.println(objectMapper.writeValueAsString(health));
-    assertTrue(health.isEmpty(), "health");
+    // Immediate fields
+    assertAll(
+        () -> assertNotNullAndLog(adminFactory.getHealthChecks(), prefix + ".healthChecks"),
+        () -> assertNotNullAndLog(adminFactory.getTasks(), prefix + ".tasks"));
+    assertAllFieldsUsedAndClear();
+    // Drill into nested objects
+    testContents(adminFactory.getHealthChecks());
+    testContents(adminFactory.getTasks());
   }
 
-  /**
-   * Ensure that the <em>testValue</em> section of the configuration is setup as expected.
-   *
-   * @param configFilePath The path to the configuration file under test.
-   * @throws ConfigurationException If the configuration is not valid.
-   * @throws IOException If there are issues retrieving the configuration file.
-   * @see DropwizardTestDemoConfiguration
-   */
-  @ParameterizedTest(name = "{0}")
-  @MethodSource("provideConfigFiles")
-  public void testContents_testValue(String configFilePath)
-      throws ConfigurationException, IOException {
+  private void testContents(@NonNull HealthCheckConfiguration healthChecks) {
     // Setup
-    SubstitutingSourceProvider substitutingSourceProvider =
-        new SubstitutingSourceProvider(
-            resourceConfigurationSourceProvider, environmentVariableSubstitutor);
-    DropwizardTestDemoConfiguration configPOJO =
-        factory.build(substitutingSourceProvider, configFilePath);
-
-    // Execution
-    String testValue = configPOJO.getTestValue();
+    String prefix = "healthChecks";
+    expectClassFieldsTested(prefix, HealthCheckConfiguration.class);
 
     // Validation
-    System.out.println(objectMapper.writeValueAsString(testValue));
-    assertNull(testValue, "testValue");
+    // Immediate fields
+    assertAll(
+        () -> assertEqualsAndLog(1, healthChecks.getMinThreads(), prefix + ".minThreads"),
+        () -> assertEqualsAndLog(4, healthChecks.getMaxThreads(), prefix + ".maxThreads"),
+        () -> assertEqualsAndLog(1, healthChecks.getWorkQueueSize(), prefix + ".workQueueSize"),
+        () -> assertTrueAndLog(healthChecks.isServletEnabled(), prefix + ".servletEnabled"));
+    assertAllFieldsUsedAndClear();
+    // No nested objects to check.
   }
 
-  /**
-   * Ensure that the <em>logging</em> section of the configuration is setup as expected.
-   *
-   * @param configFilePath The path to the configuration file under test.
-   * @throws ConfigurationException If the configuration is not valid.
-   * @throws IOException If there are issues retrieving the configuration file.
-   * @see <a href="https://www.dropwizard.io/en/latest/manual/configuration.html#logging">Dropwizard
-   *     Config Reference: Logging</a>
-   */
-  @ParameterizedTest(name = "{0}")
-  @MethodSource("provideConfigFiles")
-  public void testContents_logging(String configFilePath)
-      throws ConfigurationException, IOException {
+  private void testContents(@NonNull TaskConfiguration tasks) {
     // Setup
-    SubstitutingSourceProvider substitutingSourceProvider =
-        new SubstitutingSourceProvider(
-            resourceConfigurationSourceProvider, environmentVariableSubstitutor);
-    DropwizardTestDemoConfiguration configPOJO =
-        factory.build(substitutingSourceProvider, configFilePath);
-
-    // Execution
-    LoggingFactory logging = configPOJO.getLoggingFactory();
+    String prefix = "tasks";
+    expectClassFieldsTested(prefix, TaskConfiguration.class);
 
     // Validation
-    System.out.println(objectMapper.writeValueAsString(logging));
-    assertNotNull(logging, "logging");
+    // Immediate fields
+    assertAll(
+        () ->
+            assertFalseAndLog(
+                tasks.isPrintStackTraceOnError(), prefix + ".printStackTraceOnError"));
+    assertAllFieldsUsedAndClear();
+    // No nested objects to check.
+  }
+
+  public void testContents(@NonNull LoggingFactory logging) {
+    // Setup
+    String prefix = "logging";
+    expectClassFieldsTested(prefix, DefaultLoggingFactory.class);
+
+    // Validation
     assertTrue(
         logging instanceof DefaultLoggingFactory, "logging instanceof DefaultLoggingFactory");
-
     DefaultLoggingFactory defaultLoggingFactory = (DefaultLoggingFactory) logging;
-    assertEquals("DEBUG", defaultLoggingFactory.getLevel(), "level");
-
-    validateContents_logging_loggers(defaultLoggingFactory.getLoggers());
-    validateContents_logging_appenders(defaultLoggingFactory.getAppenders());
+    // Immediate field validations
+    assertAll(
+        () -> assertEqualsAndLog("DEBUG", defaultLoggingFactory.getLevel(), prefix + ".level"),
+        () -> assertNotNullAndLog(defaultLoggingFactory.getAppenders(), prefix + ".appenders"),
+        () -> assertNotNullAndLog(defaultLoggingFactory.getLoggers(), prefix + ".loggers"));
+    assertAllFieldsUsedAndClear();
+    // Drill into nested objects
+    testContents(defaultLoggingFactory.getAppenders());
+    testContents(defaultLoggingFactory.getLoggers());
   }
 
-  /**
-   * Ensure that the <em>loggers</em> section of the configuration is setup as expected.
-   *
-   * @param loggers The object to validate.
-   * @see <a href="https://www.dropwizard.io/en/latest/manual/configuration.html#logging">Dropwizard
-   *     Config Reference: Logging</a>
-   */
-  private void validateContents_logging_loggers(Map<String, JsonNode> loggers) {
-    assertNotNull(loggers, "loggers");
+  private void testContents(@NonNull Map<String, JsonNode> loggers) {
+    // Setup
+    String prefix = "codingchica";
+    JsonNode codingChicaLogger = loggers.get(prefix);
+    expectedFieldNames.addAll(loggers.keySet().stream().toList());
+    expectedFieldNames.addAll(loggers.keySet().stream().map(key -> key + ".level").toList());
+
+    // Validation
     assertEquals(1, loggers.size(), "loggers.size");
-
-    JsonNode codingChicaLogger = loggers.get("codingchica");
-    assertNotNull(codingChicaLogger, "codingChicaLogger");
-    assertEquals("DEBUG", codingChicaLogger.asText(), "codingChicaLogger.level");
+    // Immediate fields
+    assertNotNullAndLog(codingChicaLogger, prefix);
+    assertEqualsAndLog("DEBUG", codingChicaLogger.asText(), prefix + ".level");
+    assertAllFieldsUsedAndClear();
+    // No nested objects to validate
   }
 
-  /**
-   * Ensure that the <em>appenders</em> section of the configuration is setup as expected.
-   *
-   * @param appenders The object to validate.
-   * @see <a href="https://www.dropwizard.io/en/latest/manual/configuration.html#logging">Dropwizard
-   *     Config Reference: Logging</a>
-   */
-  private void validateContents_logging_appenders(List<AppenderFactory<ILoggingEvent>> appenders) {
-    assertNotNull(appenders, "appenders");
-    assertEquals(1, appenders.size(), "appenders.size");
+  private void testContents(@NonNull List<AppenderFactory<ILoggingEvent>> appenders) {
+    // Setup
+    String prefix = "consoleAppenderFactory";
+    expectClassFieldsTested(prefix, ConsoleAppenderFactory.class);
 
+    // Validation
+    assertEquals(1, appenders.size(), "appenders.size");
     AppenderFactory<ILoggingEvent> appenderFactory = appenders.get(0);
-    System.out.println(appenderFactory.getClass());
     assertNotNull(appenders, "appenderFactory");
     assertTrue(
         appenderFactory instanceof ConsoleAppenderFactory,
         "appenderFactory instanceof ConsoleAppenderFactory");
-
     ConsoleAppenderFactory<ILoggingEvent> consoleAppenderFactory =
         (ConsoleAppenderFactory) appenderFactory;
+    // Immediate fields
     assertAll(
         () ->
-            assertEquals(
-                "ALL", consoleAppenderFactory.getThreshold(), "consoleAppenderFactory.threshold"),
-        () -> assertNull(consoleAppenderFactory.getLogFormat(), "consoleAppenderFactory.logFormat"),
-        () -> assertNull(consoleAppenderFactory.getLayout(), "consoleAppenderFactory.layout"),
-        () ->
-            assertEquals(
-                TimeZone.getTimeZone("UTC"),
-                consoleAppenderFactory.getTimeZone(),
-                "consoleAppenderFactory.timeZone"),
-        () ->
-            assertEquals(
-                256, consoleAppenderFactory.getQueueSize(), "consoleAppenderFactory.queueSize"),
-        () ->
-            assertEquals(
+            assertEqualsAndLog(
                 -1,
                 consoleAppenderFactory.getDiscardingThreshold(),
-                "consoleAppenderFactory.discardingThreshold"),
+                prefix + ".discardingThreshold"),
         () ->
-            assertNull(
-                consoleAppenderFactory.getMessageRate(), "consoleAppenderFactory.messageRate"),
-        () ->
-            assertFalse(
-                consoleAppenderFactory.isIncludeCallerData(),
-                "consoleAppenderFactory.includeCallerData"),
-        () ->
-            assertEquals(
+            assertEqualsAndLog(
                 new ArrayList<>(),
                 consoleAppenderFactory.getFilterFactories(),
-                "consoleAppenderFactory.filterFactories"),
+                prefix + ".filterFactories"),
         () ->
-            assertEquals(
+            assertFalseAndLog(
+                consoleAppenderFactory.isIncludeCallerData(), prefix + ".includeCallerData"),
+        () -> assertNullAndLog(consoleAppenderFactory.getLayout(), prefix + ".layout"),
+        () -> assertNullAndLog(consoleAppenderFactory.getLogFormat(), prefix + ".logFormat"),
+        () -> assertNullAndLog(consoleAppenderFactory.getMessageRate(), prefix + ".messageRate"),
+        () -> assertEqualsAndLog(256, consoleAppenderFactory.getQueueSize(), prefix + ".queueSize"),
+        () ->
+            assertEqualsAndLog(
                 ConsoleAppenderFactory.ConsoleStream.STDOUT,
                 consoleAppenderFactory.getTarget(),
-                "consoleAppenderFactory.target"));
+                prefix + ".target"),
+        () ->
+            assertEqualsAndLog("ALL", consoleAppenderFactory.getThreshold(), prefix + ".threshold"),
+        () ->
+            assertEqualsAndLog(
+                TimeZone.getTimeZone("UTC"),
+                consoleAppenderFactory.getTimeZone(),
+                prefix + ".timeZone"));
+    assertAllFieldsUsedAndClear();
+    // No nested objects to validate
   }
 
-  /**
-   * Ensure that the <em>server</em> section of the configuration is setup as expected.
-   *
-   * @param configFilePath The path to the configuration file under test.
-   * @throws ConfigurationException If the configuration is not valid.
-   * @throws IOException If there are issues retrieving the configuration file.
-   * @see <a
-   *     href="https://www.dropwizard.io/en/latest/manual/configuration.htmll#servers">Dropwizard
-   *     Config Reference: Server</a>
-   */
-  @ParameterizedTest(name = "{0}")
-  @MethodSource("provideConfigFiles")
-  public void testContents_server(String configFilePath)
-      throws ConfigurationException, IOException {
+  public void testContents(ServerFactory serverFactory) {
     // Setup
-    SubstitutingSourceProvider substitutingSourceProvider =
-        new SubstitutingSourceProvider(
-            resourceConfigurationSourceProvider, environmentVariableSubstitutor);
-    DropwizardTestDemoConfiguration configPOJO =
-        factory.build(substitutingSourceProvider, configFilePath);
+    String prefix = "defaultServerFactory";
+    expectClassFieldsTested(prefix, DefaultServerFactory.class);
     Set<String> allowedMethods = new HashSet<>();
     allowedMethods.add("HEAD");
     allowedMethods.add("DELETE");
@@ -394,11 +321,7 @@ public class ConfigurationFileContentsTest {
     allowedMethods.add("PUT");
     allowedMethods.add("PATCH");
 
-    // Execution
-    ServerFactory serverFactory = configPOJO.getServerFactory();
-
     // Validation
-    System.out.println(objectMapper.writeValueAsString(serverFactory));
     assertNotNull(serverFactory, "serverFactory");
     assertTrue(
         serverFactory instanceof DefaultServerFactory,
@@ -407,101 +330,109 @@ public class ConfigurationFileContentsTest {
     DefaultServerFactory defaultServerFactory = (DefaultServerFactory) serverFactory;
     assertAll(
         () ->
-            assertEquals(
-                1024, defaultServerFactory.getMaxThreads(), "defaultServerFactory.maxThreads"),
+            assertNotNullAndLog(
+                defaultServerFactory.getAdminConnectors(), prefix + ".adminConnectors"),
         () ->
-            assertEquals(
-                8, defaultServerFactory.getMinThreads(), "defaultServerFactory.minThreads"),
+            assertEqualsAndLog(
+                "/", defaultServerFactory.getAdminContextPath(), prefix + ".adminContextPath"),
         () ->
-            assertEquals(
-                1024,
-                defaultServerFactory.getMaxQueuedRequests(),
-                "defaultServerFactory.maxQueuedRequests"),
+            assertEqualsAndLog(
+                64, defaultServerFactory.getAdminMaxThreads(), prefix + ".adminMaxThreads"),
         () ->
-            assertEquals(
-                Duration.minutes(1),
-                defaultServerFactory.getIdleThreadTimeout(),
-                "defaultServerFactory.idleThreadTimeout"),
+            assertEqualsAndLog(
+                1, defaultServerFactory.getAdminMinThreads(), prefix + ".adminMinThreads"),
         () ->
-            assertNull(
-                defaultServerFactory.getNofileSoftLimit(), "defaultServerFactory.nofileSoftLimit"),
-        () ->
-            assertNull(
-                defaultServerFactory.getNofileHardLimit(), "defaultServerFactory.nofileHardLimit"),
-        () -> assertNull(defaultServerFactory.getGid(), "defaultServerFactory.gid"),
-        () -> assertNull(defaultServerFactory.getUid(), "defaultServerFactory.uid"),
-        () -> assertNull(defaultServerFactory.getUser(), "defaultServerFactory.user"),
-        () -> assertNull(defaultServerFactory.getGroup(), "defaultServerFactory.group"),
-        () -> assertNull(defaultServerFactory.getUmask(), "defaultServerFactory.umask"),
-        () ->
-            assertNull(defaultServerFactory.getStartsAsRoot(), "defaultServerFactory.startsAsRoot"),
-        () ->
-            assertTrue(
-                defaultServerFactory.getRegisterDefaultExceptionMappers(),
-                "defaultServerFactory.registerDefaultExceptionMappers"),
-        () ->
-            assertFalse(
-                defaultServerFactory.getDetailedJsonProcessingExceptionMapper(),
-                "defaultServerFactory.detailedJsonProcessingExceptionMapper"),
-        () ->
-            assertEquals(
-                Duration.seconds(30),
-                defaultServerFactory.getShutdownGracePeriod(),
-                "defaultServerFactory.shutdownGracePeriod"),
-        () ->
-            assertEquals(
+            assertEqualsAndLog(
                 allowedMethods,
                 defaultServerFactory.getAllowedMethods(),
-                "defaultServerFactory.allowedMethods"),
+                prefix + ".allowedMethods"),
         () ->
-            assertTrue(
-                defaultServerFactory.getEnableThreadNameFilter(),
-                "defaultServerFactory.enableThreadNameFilter"),
+            assertNotNullAndLog(
+                defaultServerFactory.getApplicationConnectors(), prefix + ".applicationConnectors"),
         () ->
-            assertFalse(
-                defaultServerFactory.getDumpAfterStart(), "defaultServerFactory.dumpAfterStart"),
-        () ->
-            assertFalse(
-                defaultServerFactory.getDumpBeforeStop(), "defaultServerFactory.dumpBeforeStop"),
-        () ->
-            assertEquals(
-                64,
-                defaultServerFactory.getAdminMaxThreads(),
-                "defaultServerFactory.adminMaxThreads"),
-        () ->
-            assertEquals(
-                1,
-                defaultServerFactory.getAdminMinThreads(),
-                "defaultServerFactory.adminMinThreads"),
-        () ->
-            assertEquals(
+            assertEqualsAndLog(
                 "/",
                 defaultServerFactory.getApplicationContextPath(),
-                "defaultServerFactory.applicationContextPath"),
+                prefix + ".applicationContextPath"),
         () ->
-            assertEquals(
-                "/",
-                defaultServerFactory.getAdminContextPath(),
-                "defaultServerFactory.adminContextPath"),
+            assertFalseAndLog(
+                defaultServerFactory.getDetailedJsonProcessingExceptionMapper(),
+                prefix + ".detailedJsonProcessingExceptionMapper"),
         () ->
-            assertEquals(
-                "/",
-                defaultServerFactory.getAdminContextPath(),
-                "defaultServerFactory.adminContextPath"),
+            assertFalseAndLog(defaultServerFactory.getDumpAfterStart(), prefix + ".dumpAfterStart"),
         () ->
-            assertTrue(
-                defaultServerFactory.getJerseyRootPath().isEmpty(),
-                "defaultServerFactory.rootPath"),
+            assertFalseAndLog(defaultServerFactory.getDumpBeforeStop(), prefix + ".dumpBeforeStop"),
         () ->
-            assertTrue(
-                defaultServerFactory.getJerseyRootPath().isEmpty(),
-                "defaultServerFactory.rootPath"));
+            assertFalseAndLog(
+                defaultServerFactory.isEnableAdminVirtualThreads(),
+                prefix + ".enableAdminVirtualThreads"),
+        () ->
+            assertTrueAndLog(
+                defaultServerFactory.getEnableThreadNameFilter(),
+                prefix + ".enableThreadNameFilter"),
+        () ->
+            assertFalseAndLog(
+                defaultServerFactory.isEnableVirtualThreads(), prefix + ".enableVirtualThreads"),
+        () -> assertNullAndLog(defaultServerFactory.getGid(), prefix + ".gid"),
+        () -> assertNullAndLog(defaultServerFactory.getGroup(), prefix + ".group"),
+        () ->
+            assertNotNullAndLog(
+                defaultServerFactory.getGzipFilterFactory(), prefix + ".gzipFilterFactory"),
+        () ->
+            assertEqualsAndLog(
+                Duration.minutes(1),
+                defaultServerFactory.getIdleThreadTimeout(),
+                prefix + ".idleThreadTimeout"),
+        () ->
+            assertTrueAndLog(
+                defaultServerFactory.getJerseyRootPath().isEmpty(), prefix + ".jerseyRootPath"),
+        () ->
+            assertEqualsAndLog(
+                1024, defaultServerFactory.getMaxQueuedRequests(), prefix + ".maxQueuedRequests"),
+        () ->
+            assertEqualsAndLog(1024, defaultServerFactory.getMaxThreads(), prefix + ".maxThreads"),
+        () -> assertNullAndLog(defaultServerFactory.getMetricPrefix(), prefix + ".metricPrefix"),
+        () -> assertEqualsAndLog(8, defaultServerFactory.getMinThreads(), prefix + ".minThreads"),
+        () ->
+            assertNullAndLog(
+                defaultServerFactory.getNofileHardLimit(), prefix + ".nofileHardLimit"),
+        () ->
+            assertNullAndLog(
+                defaultServerFactory.getNofileSoftLimit(), prefix + ".nofileSoftLimit"),
+        () ->
+            assertTrueAndLog(
+                defaultServerFactory.getRegisterDefaultExceptionMappers(),
+                prefix + ".registerDefaultExceptionMappers"),
+        () ->
+            assertNotNullAndLog(
+                defaultServerFactory.getRequestLogFactory(), prefix + ".requestLogFactory"),
+        () ->
+            assertEqualsAndLog(
+                ResponseMeteredLevel.COARSE,
+                defaultServerFactory.getResponseMeteredLevel(),
+                prefix + ".responseMeteredLevel"),
+        () -> assertNotNullAndLog(defaultServerFactory.getServerPush(), prefix + ".serverPush"),
+        () ->
+            assertEqualsAndLog(
+                Duration.seconds(30),
+                defaultServerFactory.getShutdownGracePeriod(),
+                prefix + ".shutdownGracePeriod"),
+        () -> assertNullAndLog(defaultServerFactory.getStartsAsRoot(), prefix + ".startsAsRoot"),
+        () ->
+            assertTrueAndLog(
+                defaultServerFactory.isThreadPoolSizedCorrectly(),
+                prefix + ".threadPoolSizedCorrectly"),
+        () -> assertNullAndLog(defaultServerFactory.getUid(), prefix + ".uid"),
+        () -> assertNullAndLog(defaultServerFactory.getUmask(), prefix + ".umask"),
+        () -> assertNullAndLog(defaultServerFactory.getUser(), prefix + ".user"));
 
-    validateContents_server_applicationConnectors(defaultServerFactory.getApplicationConnectors());
+    assertAllFieldsUsedAndClear();
+    // Drill into nested objects.
     validateContents_server_adminConnectors(defaultServerFactory.getAdminConnectors());
-    validateContents_server_serverPush(defaultServerFactory.getServerPush());
-    validateContents_server_requestLogFactory(defaultServerFactory.getRequestLogFactory());
+    validateContents_server_applicationConnectors(defaultServerFactory.getApplicationConnectors());
     validateContents_server_gzip(defaultServerFactory.getGzipFilterFactory());
+    validateContents_server_requestLogFactory(defaultServerFactory.getRequestLogFactory());
+    validateContents_server_serverPush(defaultServerFactory.getServerPush());
   }
 
   /**
@@ -540,6 +471,12 @@ public class ConfigurationFileContentsTest {
    */
   private void validateContents_server_httpConnectorFactory(
       int port, List<ConnectorFactory> applicationConnectors) {
+    // Setup
+    String prefix = "httpConnectorFactory";
+    expectClassFieldsTested("applicationConnectors", ConnectorFactory.class);
+    expectClassFieldsTested(prefix, HttpConnectorFactory.class);
+
+    // Validations
     assertNotNull(applicationConnectors, "applicationConnectors");
     assertEquals(1, applicationConnectors.size(), "applicationConnectors.size");
 
@@ -547,113 +484,111 @@ public class ConfigurationFileContentsTest {
     assertNotNull(connectorFactory, "applicationConnectors.http");
 
     HttpConnectorFactory httpConnectorFactory = (HttpConnectorFactory) connectorFactory;
+    // Immediate fields
     assertAll(
-        () -> assertEquals(port, httpConnectorFactory.getPort(), "httpConnectorFactory.port"),
-        () -> assertNull(httpConnectorFactory.getBindHost(), "httpConnectorFactory.bindHost"),
         () ->
-            assertFalse(
-                httpConnectorFactory.isInheritChannel(), "httpConnectorFactory.inheritChannel"),
+            assertTrueAndLog(
+                httpConnectorFactory.getAcceptorThreads().isEmpty(), prefix + ".acceptorThreads"),
         () ->
-            assertEquals(
-                DataSize.bytes(512),
-                httpConnectorFactory.getHeaderCacheSize(),
-                "httpConnectorFactory.headerCacheSize"),
+            assertNullAndLog(
+                httpConnectorFactory.getAcceptQueueSize(), prefix + ".acceptQueueSize"),
+        () -> assertNullAndLog(httpConnectorFactory.getBindHost(), prefix + ".bindHost"),
         () ->
-            assertEquals(
-                DataSize.kibibytes(32),
-                httpConnectorFactory.getOutputBufferSize(),
-                "httpConnectorFactory.outputBufferSize"),
-        () ->
-            assertEquals(
-                DataSize.kibibytes(8),
-                httpConnectorFactory.getMaxRequestHeaderSize(),
-                "httpConnectorFactory.maxRequestHeaderSize"),
-        () ->
-            assertEquals(
-                DataSize.kibibytes(8),
-                httpConnectorFactory.getMaxResponseHeaderSize(),
-                "httpConnectorFactory.maxResponseHeaderSize"),
-        () ->
-            assertEquals(
-                DataSize.kibibytes(8),
-                httpConnectorFactory.getInputBufferSize(),
-                "httpConnectorFactory.inputBufferSize"),
-        () ->
-            assertEquals(
-                DataSize.kibibytes(8),
-                httpConnectorFactory.getInputBufferSize(),
-                "httpConnectorFactory.inputBufferSize"),
-        () ->
-            assertEquals(
-                Duration.seconds(30),
-                httpConnectorFactory.getIdleTimeout(),
-                "httpConnectorFactory.idleTimeout"),
-        () ->
-            assertEquals(
-                DataSize.bytes(0),
-                httpConnectorFactory.getMinRequestDataPerSecond(),
-                "httpConnectorFactory.minRequestDataPerSecond"),
-        () ->
-            assertEquals(
-                DataSize.bytes(0),
-                httpConnectorFactory.getMinResponseDataPerSecond(),
-                "httpConnectorFactory.minResponseDataPerSecond"),
-        () ->
-            assertEquals(
-                DataSize.bytes(64),
-                httpConnectorFactory.getMinBufferPoolSize(),
-                "httpConnectorFactory.minBufferPoolSize"),
-        () ->
-            assertEquals(
+            assertEqualsAndLog(
                 DataSize.bytes(1024),
                 httpConnectorFactory.getBufferPoolIncrement(),
-                "httpConnectorFactory.bufferPoolIncrement"),
+                prefix + ".bufferPoolIncrement"),
         () ->
-            assertEquals(
-                DataSize.kibibytes(64),
-                httpConnectorFactory.getMaxBufferPoolSize(),
-                "httpConnectorFactory.maxBufferPoolSize"),
+            assertEqualsAndLog(
+                DataSize.bytes(512),
+                httpConnectorFactory.getHeaderCacheSize(),
+                prefix + ".headerCacheSize"),
         () ->
-            assertTrue(
-                httpConnectorFactory.getAcceptorThreads().isEmpty(),
-                "httpConnectorFactory.acceptorThreads"),
-        () ->
-            assertTrue(
-                httpConnectorFactory.getSelectorThreads().isEmpty(),
-                "httpConnectorFactory.selectorThreads"),
-        () ->
-            assertNull(
-                httpConnectorFactory.getAcceptQueueSize(), "httpConnectorFactory.acceptQueueSize"),
-        () ->
-            assertTrue(httpConnectorFactory.isReuseAddress(), "httpConnectorFactory.reuseAddress"),
-        () ->
-            assertFalse(
-                httpConnectorFactory.isUseServerHeader(), "httpConnectorFactory.useServerHeader"),
-        () ->
-            assertTrue(
-                httpConnectorFactory.isUseDateHeader(), "httpConnectorFactory.useDateHeader"),
-        () ->
-            assertFalse(
-                httpConnectorFactory.isUseForwardedHeaders(),
-                "httpConnectorFactory.useForwardedHeaders"),
-        () ->
-            assertFalse(
-                httpConnectorFactory.isUseProxyProtocol(), "httpConnectorFactory.useProxyProtocol"),
-        () ->
-            assertEquals(
+            assertEqualsAndLog(
                 HttpCompliance.RFC7230,
                 httpConnectorFactory.getHttpCompliance(),
-                "httpConnectorFactory.httpCompliance"),
+                prefix + ".httpCompliance"),
         () ->
-            assertEquals(
+            assertEqualsAndLog(
+                Duration.seconds(30),
+                httpConnectorFactory.getIdleTimeout(),
+                prefix + ".idleTimeout"),
+        () ->
+            assertFalseAndLog(httpConnectorFactory.isInheritChannel(), prefix + ".inheritChannel"),
+        () ->
+            assertEqualsAndLog(
+                DataSize.kibibytes(8),
+                httpConnectorFactory.getInputBufferSize(),
+                prefix + ".inputBufferSize"),
+        () ->
+            assertEqualsAndLog(
+                DataSize.kibibytes(64),
+                httpConnectorFactory.getMaxBufferPoolSize(),
+                prefix + ".maxBufferPoolSize"),
+        () ->
+            assertEqualsAndLog(
+                DataSize.kibibytes(8),
+                httpConnectorFactory.getMaxRequestHeaderSize(),
+                prefix + ".maxRequestHeaderSize"),
+        () ->
+            assertEqualsAndLog(
+                DataSize.kibibytes(8),
+                httpConnectorFactory.getMaxResponseHeaderSize(),
+                prefix + ".maxResponseHeaderSize"),
+        () ->
+            assertEqualsAndLog(
+                DataSize.bytes(64),
+                httpConnectorFactory.getMinBufferPoolSize(),
+                prefix + ".minBufferPoolSize"),
+        () ->
+            assertEqualsAndLog(
+                DataSize.bytes(0),
+                httpConnectorFactory.getMinRequestDataPerSecond(),
+                prefix + ".minRequestDataPerSecond"),
+        () ->
+            assertEqualsAndLog(
+                DataSize.bytes(0),
+                httpConnectorFactory.getMinResponseDataPerSecond(),
+                prefix + ".minResponseDataPerSecond"),
+        () ->
+            assertEqualsAndLog(
+                DataSize.kibibytes(32),
+                httpConnectorFactory.getOutputBufferSize(),
+                prefix + ".outputBufferSize"),
+        () -> assertEqualsAndLog(port, httpConnectorFactory.getPort(), prefix + ".port"),
+        () ->
+            assertEqualsAndLog(
                 CookieCompliance.RFC6265,
                 httpConnectorFactory.getRequestCookieCompliance(),
-                "httpConnectorFactory.requestCookieCompliance"),
+                prefix + ".requestCookieCompliance"),
         () ->
-            assertEquals(
+            assertEqualsAndLog(
                 CookieCompliance.RFC6265,
                 httpConnectorFactory.getResponseCookieCompliance(),
-                "httpConnectorFactory.responseCookieCompliance"));
+                prefix + ".responseCookieCompliance"),
+        () ->
+            assertEqualsAndLog(
+                true, httpConnectorFactory.isReuseAddress(), prefix + ".reuseAddress"),
+        () ->
+            assertTrueAndLog(
+                httpConnectorFactory.getSelectorThreads().isEmpty(), prefix + ".selectorThreads"),
+        () ->
+            assertEqualsAndLog(
+                UriCompliance.DEFAULT,
+                httpConnectorFactory.getUriCompliance(),
+                prefix + ".uriCompliance"),
+        () -> assertTrueAndLog(httpConnectorFactory.isUseDateHeader(), prefix + ".useDateHeader"),
+        () ->
+            assertFalseAndLog(
+                httpConnectorFactory.isUseForwardedHeaders(), prefix + ".useForwardedHeaders"),
+        () ->
+            assertFalseAndLog(
+                httpConnectorFactory.isUseProxyProtocol(), prefix + ".useProxyProtocol"),
+        () ->
+            assertFalseAndLog(
+                httpConnectorFactory.isUseServerHeader(), prefix + ".useServerHeader"));
+    assertAllFieldsUsedAndClear();
+    // Nested fields
   }
 
   /**
@@ -665,16 +600,23 @@ public class ConfigurationFileContentsTest {
    *     href="https://www.dropwizard.io/en/latest/manual/configuration.html#server-push">Dropwizard
    *     Config Reference: Server Push</a>
    */
-  private void validateContents_server_serverPush(ServerPushFilterFactory serverPush) {
-    assertNotNull(serverPush, "serverPush");
+  private void validateContents_server_serverPush(@NonNull ServerPushFilterFactory serverPush) {
+    // Setup
+    String prefix = "serverPush";
+    expectClassFieldsTested("serverPush", ServerPushFilterFactory.class);
+
+    // Validation
+    // Immediate fields
     assertAll(
-        () -> assertFalse(serverPush.isEnabled(), "serverPush.enabled"),
         () ->
-            assertEquals(
-                Duration.seconds(4), serverPush.getAssociatePeriod(), "serverPush.associatePeriod"),
-        () -> assertEquals(16, serverPush.getMaxAssociations(), "serverPush.maxAssociations"),
-        () -> assertNull(serverPush.getRefererHosts(), "serverPush.refererHosts"),
-        () -> assertNull(serverPush.getRefererPorts(), "serverPush.refererPorts"));
+            assertEqualsAndLog(
+                Duration.seconds(4), serverPush.getAssociatePeriod(), prefix + ".associatePeriod"),
+        () -> assertFalseAndLog(serverPush.isEnabled(), prefix + ".enabled"),
+        () -> assertEqualsAndLog(16, serverPush.getMaxAssociations(), prefix + ".maxAssociations"),
+        () -> assertNullAndLog(serverPush.getRefererHosts(), prefix + ".refererHosts"),
+        () -> assertNullAndLog(serverPush.getRefererPorts(), prefix + ".refererPorts"));
+    assertAllFieldsUsedAndClear();
+    // No nested objects to validate.
   }
 
   /**
@@ -685,68 +627,108 @@ public class ConfigurationFileContentsTest {
    *     href="https://www.dropwizard.io/en/latest/manual/configuration.html#request-log">Dropwizard
    *     Config Reference: Request Log</a>
    */
-  private void validateContents_server_requestLogFactory(RequestLogFactory<?> requestLogFactory) {
-    assertNotNull(requestLogFactory, "requestLogFactory");
+  private void validateContents_server_requestLogFactory(
+      @NonNull RequestLogFactory<?> requestLogFactory) {
+    // Setup
+    String logbackPrefix = "logbackAccessRequestLogFactory";
+    expectedFieldNames.add(logbackPrefix);
+    expectClassFieldsTested(logbackPrefix, LogbackAccessRequestLogFactory.class);
     assertTrue(
         requestLogFactory instanceof LogbackAccessRequestLogFactory,
         "requestLogFactory instanceof LogbackAccessRequestLogFactory");
 
+    // Execution
     LogbackAccessRequestLogFactory logbackAccessRequestLogFactory =
         (LogbackAccessRequestLogFactory) requestLogFactory;
-    assertNotNull(logbackAccessRequestLogFactory, "logbackAccessRequestLogFactory");
-    assertTrue(
-        logbackAccessRequestLogFactory.isEnabled(), "logbackAccessRequestLogFactory.enabled");
 
+    // Validation
     List<AppenderFactory<IAccessEvent>> appenders = logbackAccessRequestLogFactory.getAppenders();
-    assertNotNull(appenders, "logbackAccessRequestLogFactory.appenders");
-    assertEquals(1, appenders.size(), "logbackAccessRequestLogFactory.appenders.size");
-
     AppenderFactory<IAccessEvent> appenderFactory = appenders.get(0);
-    assertNotNull(appenderFactory, "logbackAccessRequestLogFactory.appenderFactory");
-
-    System.out.println(appenderFactory.getClass());
+    assertNotNullAndLog(logbackAccessRequestLogFactory, logbackPrefix);
+    assertAll(
+        () ->
+            assertTrueAndLog(
+                logbackAccessRequestLogFactory.isEnabled(), logbackPrefix + ".enabled"),
+        () -> assertNotNullAndLog(appenders, logbackPrefix + ".appenders"),
+        () -> assertEqualsAndLog(1, appenders.size(), logbackPrefix + ".appenders"));
     assertTrue(
         appenderFactory instanceof ConsoleAppenderFactory,
         "appenderFactory instanceof ConsoleAppenderFactory");
+    // Drill into nested objects
+    testContents(logbackAccessRequestLogFactory);
+  }
 
-    ConsoleAppenderFactory<IAccessEvent> consoleAppenderFactory =
-        (ConsoleAppenderFactory<IAccessEvent>) appenderFactory;
+  private void testContents(
+      @NonNull LogbackAccessRequestLogFactory logbackAccessRequestLogFactory) {
+    // Setup
+    String prefix = "logbackAccessRequestLogFactory";
+    expectedFieldNames.add(prefix);
+    expectClassFieldsTested(prefix, LogbackAccessRequestLogFactory.class);
+
+    // Validation
+    List<AppenderFactory<IAccessEvent>> appenders = logbackAccessRequestLogFactory.getAppenders();
+    assertAll(
+        () -> assertTrueAndLog(logbackAccessRequestLogFactory.isEnabled(), prefix + ".enabled"),
+        () -> assertNotNullAndLog(appenders, prefix + ".appenders"),
+        () -> assertEqualsAndLog(1, appenders.size(), prefix + ".appenders"));
+    assertAllFieldsUsedAndClear();
+    // Drill into nested objects
+    testContents(appenders.get(0));
+  }
+
+  private void testContents(@NonNull AppenderFactory<IAccessEvent> appenderFactory) {
+    // Setup
+    String prefix = "logbackAccessRequestLogFactory";
+    expectClassFieldsTested(prefix, AppenderFactory.class);
+
+    // Validation
+    assertTrue(
+        appenderFactory instanceof ConsoleAppenderFactory,
+        "appenderFactory instanceof ConsoleAppenderFactory");
+    assertAllFieldsUsedAndClear();
+    // Drill into nested objects
+    testContents((ConsoleAppenderFactory<IAccessEvent>) appenderFactory);
+  }
+
+  private void testContents(@NonNull ConsoleAppenderFactory<IAccessEvent> consoleAppenderFactory) {
+    // Setup
+    String prefix = "consoleAppenderFactory";
+    expectClassFieldsTested(prefix, ConsoleAppenderFactory.class);
+
+    // Validation
     assertAll(
         () ->
-            assertEquals(
-                "ALL", consoleAppenderFactory.getThreshold(), "consoleAppenderFactory.threshold"),
-        () -> assertNull(consoleAppenderFactory.getLogFormat(), "consoleAppenderFactory.logFormat"),
-        () -> assertNull(consoleAppenderFactory.getLayout(), "consoleAppenderFactory.layout"),
-        () ->
-            assertEquals(
-                TimeZone.getTimeZone("UTC"),
-                consoleAppenderFactory.getTimeZone(),
-                "consoleAppenderFactory.timeZone"),
-        () ->
-            assertEquals(
-                256, consoleAppenderFactory.getQueueSize(), "consoleAppenderFactory.queueSize"),
-        () ->
-            assertEquals(
+            assertEqualsAndLog(
                 -1,
                 consoleAppenderFactory.getDiscardingThreshold(),
-                "consoleAppenderFactory.discardingThreshold"),
+                prefix + ".discardingThreshold"),
         () ->
-            assertNull(
-                consoleAppenderFactory.getMessageRate(), "consoleAppenderFactory.messageRate"),
-        () ->
-            assertFalse(
-                consoleAppenderFactory.isIncludeCallerData(),
-                "consoleAppenderFactory.includeCallerData"),
-        () ->
-            assertEquals(
+            assertEqualsAndLog(
                 new ArrayList<>(),
                 consoleAppenderFactory.getFilterFactories(),
-                "consoleAppenderFactory.filterFactories"),
+                prefix + ".filterFactories"),
         () ->
-            assertEquals(
+            assertFalseAndLog(
+                consoleAppenderFactory.isIncludeCallerData(), prefix + ".includeCallerData"),
+        () -> assertNullAndLog(consoleAppenderFactory.getLogFormat(), prefix + ".logFormat"),
+        () -> assertNullAndLog(consoleAppenderFactory.getLayout(), prefix + ".layout"),
+        () -> assertNullAndLog(consoleAppenderFactory.getMessageRate(), prefix + ".messageRate"),
+        () ->
+            assertEqualsAndLog(
                 ConsoleAppenderFactory.ConsoleStream.STDOUT,
                 consoleAppenderFactory.getTarget(),
-                "consoleAppenderFactory.target"));
+                prefix + ".target"),
+        () ->
+            assertEqualsAndLog("ALL", consoleAppenderFactory.getThreshold(), prefix + ".threshold"),
+        () ->
+            assertEqualsAndLog(
+                TimeZone.getTimeZone("UTC"),
+                consoleAppenderFactory.getTimeZone(),
+                prefix + ".timeZone"),
+        () ->
+            assertEqualsAndLog(256, consoleAppenderFactory.getQueueSize(), prefix + ".queueSize"));
+    assertAllFieldsUsedAndClear();
+    // No nested objects to validate.
   }
 
   /**
@@ -757,36 +739,134 @@ public class ConfigurationFileContentsTest {
    * @see <a href="https://www.dropwizard.io/en/latest/manual/configuration.html#gzip">Dropwizard
    *     Config Reference: GZip</a>
    */
-  private void validateContents_server_gzip(GzipHandlerFactory gzipFilterFactory) {
-    assertNotNull(gzipFilterFactory, "gzipFilterFactory");
+  private void validateContents_server_gzip(@NonNull GzipHandlerFactory gzipFilterFactory) {
+    // Setup
+    String prefix = "gzipFilterFactory";
+    expectClassFieldsTested(prefix, GzipHandlerFactory.class);
+
+    // Validation
+    // Individual fields
     assertAll(
-        () -> assertTrue(gzipFilterFactory.isEnabled(), "gzipFilterFactory.enabled"),
         () ->
-            assertEquals(
-                DataSize.bytes(256),
-                gzipFilterFactory.getMinimumEntitySize(),
-                "gzipFilterFactory.minimumEntitySize"),
+            assertEqualsAndLog(
+                DataSize.kibibytes(8), gzipFilterFactory.getBufferSize(), prefix + ".bufferSize"),
         () ->
-            assertEquals(
-                DataSize.kibibytes(8),
-                gzipFilterFactory.getBufferSize(),
-                "gzipFilterFactory.bufferSize"),
+            assertNullAndLog(
+                gzipFilterFactory.getCompressedMimeTypes(), prefix + ".compressedMimeTypes"),
         () ->
-            assertNull(
-                gzipFilterFactory.getCompressedMimeTypes(),
-                "gzipFilterFactory.compressedMimeTypes"),
-        () ->
-            assertNull(
-                gzipFilterFactory.getExcludedMimeTypes(), "gzipFilterFactory.excludedMimeTypes"),
-        () ->
-            assertNull(gzipFilterFactory.getIncludedMethods(), "gzipFilterFactory.includedMethods"),
-        () -> assertNull(gzipFilterFactory.getExcludedPaths(), "gzipFilterFactory.excludedPaths"),
-        () -> assertNull(gzipFilterFactory.getIncludedPaths(), "gzipFilterFactory.includedPaths"),
-        () ->
-            assertEquals(
+            assertEqualsAndLog(
                 -1,
                 gzipFilterFactory.getDeflateCompressionLevel(),
-                "gzipFilterFactory.deflateCompressionLevel"),
-        () -> assertFalse(gzipFilterFactory.isSyncFlush(), "gzipFilterFactory.syncFlush"));
+                prefix + ".deflateCompressionLevel"),
+        () -> assertTrueAndLog(gzipFilterFactory.isEnabled(), prefix + ".enabled"),
+        () ->
+            assertNullAndLog(
+                gzipFilterFactory.getExcludedMimeTypes(), prefix + ".excludedMimeTypes"),
+        () -> assertNullAndLog(gzipFilterFactory.getExcludedPaths(), prefix + ".excludedPaths"),
+        () -> assertNullAndLog(gzipFilterFactory.getIncludedMethods(), prefix + ".includedMethods"),
+        () -> assertNullAndLog(gzipFilterFactory.getIncludedPaths(), prefix + ".includedPaths"),
+        () ->
+            assertEqualsAndLog(
+                DataSize.bytes(256),
+                gzipFilterFactory.getMinimumEntitySize(),
+                prefix + ".minimumEntitySize"),
+        () -> assertFalseAndLog(gzipFilterFactory.isSyncFlush(), prefix + ".syncFlush"));
+    assertAllFieldsUsedAndClear();
+    // No objects to drill into.
+  }
+
+  private void assertEqualsAndLog(Object expectedValue, Object actualValue, String fieldName) {
+    assertEquals(expectedValue, actualValue, fieldName);
+    testedFields.add(fieldName);
+  }
+
+  private void assertEqualsAndLog(int expectedValue, int actualValue, String fieldName) {
+    assertEquals(expectedValue, actualValue, fieldName);
+    testedFields.add(fieldName);
+  }
+
+  private void assertNullAndLog(Object actualValue, String fieldName) {
+    assertNull(actualValue, fieldName);
+    testedFields.add(fieldName);
+  }
+
+  private void assertNotNullAndLog(Object actualValue, String fieldName) {
+    assertNotNull(actualValue, fieldName);
+    testedFields.add(fieldName);
+  }
+
+  private void assertFalseAndLog(boolean actualValue, String fieldName) {
+    assertFalse(actualValue, fieldName);
+    testedFields.add(fieldName);
+  }
+
+  private void assertTrueAndLog(boolean actualValue, String fieldName) {
+    assertTrue(actualValue, fieldName);
+    testedFields.add(fieldName);
+  }
+
+  private <T> void expectClassFieldsTested(String prefix, Class<T> clazz) {
+    Set<String> fieldNames =
+        Arrays.stream(clazz.getMethods())
+            .filter(method -> !"getClass".equals(method.getName()))
+            .filter(method -> !"get".equals(method.getName()))
+            .filter(method -> !void.class.equals(method.getReturnType()))
+            .filter(
+                method ->
+                    StringUtils.startsWith(method.getName(), "get")
+                        || StringUtils.startsWith(method.getName(), "is"))
+            .map(
+                (method) -> {
+                  String fieldName = StringUtils.removeStart(method.getName(), "is");
+                  fieldName = StringUtils.removeStart(fieldName, "get");
+                  String firstChar = StringUtils.left(fieldName, 1);
+                  firstChar = StringUtils.lowerCase(firstChar);
+                  fieldName = StringUtils.substring(fieldName, 1);
+                  fieldName = firstChar + fieldName;
+                  return prefix + "." + fieldName;
+                })
+            .collect(Collectors.toCollection(LinkedHashSet::new));
+    expectedFieldNames.addAll(fieldNames);
+  }
+
+  private void assertAllFieldsUsedAndClear() {
+    List<String> expectedFieldNamesList = expectedFieldNames.stream().sorted().toList();
+    List<String> actualFieldNamesList = testedFields.stream().sorted().toList();
+    int currentIndex = 0;
+    for (int i = 0; i < expectedFieldNamesList.size() && i < actualFieldNamesList.size(); i++) {
+      currentIndex++;
+      assertEquals(
+          expectedFieldNamesList.get(i),
+          actualFieldNamesList.get(i),
+          String.format(
+              "%s: enforce all fields tested: Expected:%n%s%nvs. Actual:%n%s",
+              i, expectedFieldNamesList, actualFieldNamesList));
+    }
+    if (expectedFieldNamesList.size() > actualFieldNamesList.size()) {
+      StringBuffer buffer = new StringBuffer("Expected fields not tested: ");
+      for (int i = currentIndex; i < expectedFieldNamesList.size(); i++) {
+        if (i > currentIndex) {
+          buffer.append(", ");
+        }
+        buffer.append(expectedFieldNamesList.get(i));
+      }
+      buffer.append(
+          String.format("%n%s%nvs. Actual%n%s", expectedFieldNamesList, actualFieldNamesList));
+      fail(buffer.toString());
+    }
+    if (expectedFieldNamesList.size() < actualFieldNamesList.size()) {
+      StringBuffer buffer = new StringBuffer("Unexpected fields tested: ");
+      for (int i = currentIndex; i < actualFieldNamesList.size(); i++) {
+        if (i > currentIndex) {
+          buffer.append(", ");
+        }
+        buffer.append(actualFieldNamesList.get(i));
+      }
+      buffer.append(
+          String.format("%n%s%nvs. Actual%n%s", expectedFieldNamesList, actualFieldNamesList));
+      fail(buffer.toString());
+    }
+    expectedFieldNames.clear();
+    testedFields.clear();
   }
 }
