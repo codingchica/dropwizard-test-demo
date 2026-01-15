@@ -12,7 +12,7 @@
     <name>dropwizard-test-demo</name>
 
     <properties>
-        <apache.commmons.lang.version>3.12.0</apache.commmons.lang.version>
+        <apache.commmons.lang.version>3.18.0</apache.commmons.lang.version>
         <apache.commons.collections.version>4.4</apache.commons.collections.version>
         <cucumber.expressions.version>16.1.2</cucumber.expressions.version>
         <cucumber.version>7.11.1</cucumber.version>
